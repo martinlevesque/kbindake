@@ -1,16 +1,16 @@
+from dataclasses import dataclass
 from pynput import keyboard
 import tkinter as tk
-
-
-#import subprocess
-#def show_notification(message):
-#    subprocess.run(['notify-send', message])
+import random
+from typing import Union
+import subprocess
+from bindake import Bindake
 
 
 def show_notification(message):
     root = tk.Tk()
-    root.overrideredirect(True)  # No window decorations
-    root.attributes("-topmost", True)  # Always on top
+    root.overrideredirect(True)
+    root.attributes("-topmost", True)
     root.configure(bg='black')
 
     # Get screen width and height
@@ -21,9 +21,9 @@ def show_notification(message):
     label = tk.Label(
         root,
         text=message,
-        font=("Courier New", 36, "bold"),  # Tech-style font
+        font=("Courier New", 36, "bold"),
         bg="black",
-        fg="lime"  # Matrix-style color
+        fg="lime"
     )
     label.pack()
 
@@ -32,7 +32,9 @@ def show_notification(message):
     width = label.winfo_width()
     height = label.winfo_height()
     x = (screen_width // 2) - (width // 2)
+    x += random.randint(1, 100)
     y = int(screen_height * 0.90) - (height // 2)
+    y -= random.randint(1, 100)
 
     root.geometry(f"{width}x{height}+{x}+{y}")
 
@@ -46,26 +48,38 @@ current_keys = set()
 def on_press(key):
     current_keys.add(key)
 
+    print(key)
+    command_name = "firefox"
+
     # Check if Ctrl + Alt + C are all pressed
     if (
         keyboard.Key.ctrl_l in current_keys or keyboard.Key.ctrl_r in current_keys
     ) and (
         keyboard.Key.alt_l in current_keys or keyboard.Key.alt_r in current_keys
     ) and (
-        key == keyboard.KeyCode.from_char('c')
+        key == keyboard.KeyCode.from_char('f')
     ):
-        show_notification("ctrl + alt + c was pressed!")
-        print("Ctrl + Alt + C was pressed!")
+        result = subprocess.run(["make", command_name], timeout=10, capture_output=True, text=True)
+        print(result.stdout)
+        print(result.stderr)
+        print(result.returncode)
 
-def on_release(key):
-    # Remove the key when released
+        if result.returncode == 0:
+            result.stdout.split("\n")
+            output_to_show = result.stdout.splitlines()[-1]
+            show_notification(output_to_show)
+        else:
+            show_notification(f"Error with {command_name}, {result.stdout}, {result.stderr}")
+
+def on_release(key: Union[keyboard.Key, keyboard.KeyCode, None]):
     current_keys.discard(key)
 
-    # Optionally stop on ESC
-    if key == keyboard.Key.esc:
-        return False
+def main():
+    with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
+        bindake = Bindake(listener = listener)
+        bindake.listen()
 
-# Start listener
-with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
-    listener.join()
+if __name__ == "__main__":
+    main()
+
 
