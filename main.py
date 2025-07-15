@@ -1,8 +1,3 @@
-from pynput import keyboard
-import tkinter as tk
-import random
-from typing import Union
-import subprocess
 from bindake import Bindake
 from bindake.keyboard import MyKeyboard
 from bindake.printer_view import PrinterView
@@ -82,10 +77,9 @@ def on_release(key: Union[keyboard.Key, keyboard.KeyCode, None]):
 
 def main():
     my_keyboard = MyKeyboard(notify_to=[])
-    bindake = Bindake()
+    view = PrinterView()
+    bindake = Bindake(my_keyboard=my_keyboard, view=view)
     my_keyboard.notify_to = [bindake]
-    bindake.my_keyboard = my_keyboard
-    bindake.view = PrinterView()
     bindake.loop()
 
 

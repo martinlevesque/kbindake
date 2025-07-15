@@ -1,6 +1,4 @@
 from dataclasses import dataclass
-from typing import Optional
-import pynput
 import logging
 
 from lib.message_passer import MessagePasser
@@ -19,8 +17,8 @@ view = PrinterView()
 
 @dataclass
 class Bindake(MessagePasser):
-    my_keyboard: Optional[MyKeyboard] = None
-    view: Optional[PrinterView] = None
+    my_keyboard: MyKeyboard
+    view: PrinterView
 
     def info(self, message: str):
         logging.getLogger(__name__).info(message)
@@ -35,5 +33,4 @@ class Bindake(MessagePasser):
         print(f"bindake recv: {message}")
 
     def loop(self):
-        if self.my_keyboard:
-            self.my_keyboard.listen()
+        self.my_keyboard.listen()
