@@ -1,0 +1,9 @@
+
+# Cmd R+Shift+Press F
+firefox:
+	if pgrep -x firefox-bin > /dev/null; then \
+		wmctrl -xa firefox; \
+	else \
+		firefox & \
+	fi; \
+	echo "Firefox Browser"

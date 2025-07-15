@@ -1,17 +1,14 @@
-from dataclasses import dataclass
-from pynput import keyboard
-import tkinter as tk
-import random
-from typing import Union
-import subprocess
 from bindake import Bindake
+from bindake.keyboard import MyKeyboard
+from bindake.printer_view import PrinterView
 
 
+"""
 def show_notification(message):
     root = tk.Tk()
     root.overrideredirect(True)
     root.attributes("-topmost", True)
-    root.configure(bg='black')
+    root.configure(bg="black")
 
     # Get screen width and height
     screen_width = root.winfo_screenwidth()
@@ -19,11 +16,7 @@ def show_notification(message):
 
     # Create label with tech-style font
     label = tk.Label(
-        root,
-        text=message,
-        font=("Courier New", 36, "bold"),
-        bg="black",
-        fg="lime"
+        root, text=message, font=("Courier New", 36, "bold"), bg="black", fg="lime"
     )
     label.pack()
 
@@ -41,9 +34,12 @@ def show_notification(message):
     # Auto-close after 2 seconds
     root.after(2000, root.destroy)
     root.mainloop()
+"""
 
-# Keep track of which keys are pressed
+
+"""
 current_keys = set()
+
 
 def on_press(key):
     current_keys.add(key)
@@ -53,13 +49,13 @@ def on_press(key):
 
     # Check if Ctrl + Alt + C are all pressed
     if (
-        keyboard.Key.ctrl_l in current_keys or keyboard.Key.ctrl_r in current_keys
-    ) and (
-        keyboard.Key.alt_l in current_keys or keyboard.Key.alt_r in current_keys
-    ) and (
-        key == keyboard.KeyCode.from_char('f')
+        (keyboard.Key.ctrl_l in current_keys or keyboard.Key.ctrl_r in current_keys)
+        and (keyboard.Key.alt_l in current_keys or keyboard.Key.alt_r in current_keys)
+        and (key == keyboard.KeyCode.from_char("f"))
     ):
-        result = subprocess.run(["make", command_name], timeout=10, capture_output=True, text=True)
+        result = subprocess.run(
+            ["make", command_name], timeout=10, capture_output=True, text=True
+        )
         print(result.stdout)
         print(result.stderr)
         print(result.returncode)
@@ -69,17 +65,23 @@ def on_press(key):
             output_to_show = result.stdout.splitlines()[-1]
             show_notification(output_to_show)
         else:
-            show_notification(f"Error with {command_name}, {result.stdout}, {result.stderr}")
+            show_notification(
+                f"Error with {command_name}, {result.stdout}, {result.stderr}"
+            )
+
 
 def on_release(key: Union[keyboard.Key, keyboard.KeyCode, None]):
     current_keys.discard(key)
+"""
+
 
 def main():
-    with keyboard.Listener(on_press=on_press, on_release=on_release) as listener:
-        bindake = Bindake(listener = listener)
-        bindake.listen()
+    my_keyboard = MyKeyboard(notify_to=[])
+    view = PrinterView()
+    bindake = Bindake(my_keyboard=my_keyboard, view=view)
+    my_keyboard.notify_to = [bindake]
+    bindake.loop()
+
 
 if __name__ == "__main__":
     main()
-
-
