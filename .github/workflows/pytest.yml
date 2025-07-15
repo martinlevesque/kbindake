@@ -21,5 +21,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Install xvfb
+        run: sudo apt-get install -y xvfb
+
       - name: Run tests
-        run: make test
+        run: xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' pytest
