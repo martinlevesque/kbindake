@@ -12,8 +12,6 @@ logging.basicConfig(
 from .keyboard import MyKeyboard
 from .printer_view import PrinterView
 
-view = PrinterView()
-
 
 @dataclass
 class Bindake(MessagePasser):
@@ -30,11 +28,10 @@ class Bindake(MessagePasser):
         self.info("Starting Bindake")
 
     def receive(self, message: dict):
-        print(f"bindake recv: {message}")
         keys = message["current_keys"]
 
-        if len(keys) > 0:
-            self.view.show(f" reccvv {message['current_keys']}")
+        if keys == {"alt", "shift", "F"}:
+            self.view.show(f"{message['current_keys']}")
 
     def loop(self):
         self.my_keyboard.listen()

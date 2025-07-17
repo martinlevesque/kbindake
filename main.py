@@ -78,6 +78,10 @@ def on_release(key: Union[keyboard.Key, keyboard.KeyCode, None]):
 
 
 def main():
+    # args:
+    # - -v verbose mode
+    # - overlay=disabled
+
     my_keyboard = MyKeyboard(notify_to=[])
     view = PrinterView()
     print("here1")
