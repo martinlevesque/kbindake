@@ -1,3 +1,5 @@
+import time
+import threading
 from bindake import Bindake
 from bindake.keyboard import MyKeyboard
 from bindake.printer_view import PrinterView
@@ -78,9 +80,16 @@ def on_release(key: Union[keyboard.Key, keyboard.KeyCode, None]):
 def main():
     my_keyboard = MyKeyboard(notify_to=[])
     view = PrinterView()
+    print("here1")
     bindake = Bindake(my_keyboard=my_keyboard, view=view)
+    print("here2")
     my_keyboard.notify_to = [bindake]
-    bindake.loop()
+    print("here3")
+
+    thread = threading.Thread(target=bindake.loop, daemon=True)
+    thread.start()
+
+    view.run()
 
 
 if __name__ == "__main__":

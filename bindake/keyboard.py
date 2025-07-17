@@ -21,7 +21,7 @@ class MyKeyboard(MessagePasser):
             destination.receive(message)
 
     def on_press(self, key):
-        self.current_keys.add(str(key))
+        self.current_keys.add(self.strip_key(key))
 
         self.notify(self.notification_state_message(), self.notify_to or [])
 
@@ -31,8 +31,13 @@ class MyKeyboard(MessagePasser):
             "current_keys": copy.deepcopy(self.current_keys),
         }
 
+    def strip_key(self, key) -> str:
+        s_key = str(key).removeprefix("Key.").replace("'", "")
+
+        return s_key
+
     def on_release(self, key):
-        self.current_keys.discard(str(key))
+        self.current_keys.discard(self.strip_key(key))
 
         self.notify(self.notification_state_message(), self.notify_to or [])
 
