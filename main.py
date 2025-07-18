@@ -33,7 +33,6 @@ def main():
     # - overlay=disabled
 
     mc = MakefileConfig(filepath="./Makefile.sample")
-    print(mc.read_file_lines())
 
     # Register signal handlers
     signal.signal(signal.SIGINT, handle_exit)  # Ctrl+C
