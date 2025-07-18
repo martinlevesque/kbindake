@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 import logging
+import sys
+import threading
 
 from lib.message_passer import MessagePasser
 
@@ -17,6 +19,7 @@ from .printer_view import PrinterView
 class Bindake(MessagePasser):
     my_keyboard: MyKeyboard
     view: PrinterView
+    stop_event: threading.Event
 
     def info(self, message: str):
         logging.getLogger(__name__).info(message)
@@ -32,6 +35,10 @@ class Bindake(MessagePasser):
 
         if keys == {"alt", "shift", "F"}:
             self.view.show(f"{message['current_keys']}")
+
+    def destroy(self):
+        self.stop_event.set()
+        self.view.destroy()
 
     def loop(self):
         self.my_keyboard.listen()

@@ -1,80 +1,30 @@
 import time
 import threading
+import sys
+import signal
 from bindake import Bindake
 from bindake.keyboard import MyKeyboard
+from bindake.makefile_config import MakefileConfig
 from bindake.printer_view import PrinterView
 
+stop_event = threading.Event()
 
-"""
-def show_notification(message):
-    root = tk.Tk()
-    root.overrideredirect(True)
-    root.attributes("-topmost", True)
-    root.configure(bg="black")
-
-    # Get screen width and height
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
-
-    # Create label with tech-style font
-    label = tk.Label(
-        root, text=message, font=("Courier New", 36, "bold"), bg="black", fg="lime"
-    )
-    label.pack()
-
-    # Center horizontally, position near bottom (e.g., 90% of screen height)
-    label.update_idletasks()
-    width = label.winfo_width()
-    height = label.winfo_height()
-    x = (screen_width // 2) - (width // 2)
-    x += random.randint(1, 100)
-    y = int(screen_height * 0.90) - (height // 2)
-    y -= random.randint(1, 100)
-
-    root.geometry(f"{width}x{height}+{x}+{y}")
-
-    # Auto-close after 2 seconds
-    root.after(2000, root.destroy)
-    root.mainloop()
-"""
+my_keyboard = MyKeyboard(notify_to=[], stop_event=stop_event)
+view = PrinterView()
+bindake = Bindake(my_keyboard=my_keyboard, view=view, stop_event=stop_event)
 
 
-"""
-current_keys = set()
+def handle_exit(_signum, _frame):
+    bindake.destroy()
 
 
-def on_press(key):
-    current_keys.add(key)
+def check_stop_event():
+    if stop_event.is_set():
+        handle_exit(None, None)
+        return
 
-    print(key)
-    command_name = "firefox"
-
-    # Check if Ctrl + Alt + C are all pressed
-    if (
-        (keyboard.Key.ctrl_l in current_keys or keyboard.Key.ctrl_r in current_keys)
-        and (keyboard.Key.alt_l in current_keys or keyboard.Key.alt_r in current_keys)
-        and (key == keyboard.KeyCode.from_char("f"))
-    ):
-        result = subprocess.run(
-            ["make", command_name], timeout=10, capture_output=True, text=True
-        )
-        print(result.stdout)
-        print(result.stderr)
-        print(result.returncode)
-
-        if result.returncode == 0:
-            result.stdout.split("\n")
-            output_to_show = result.stdout.splitlines()[-1]
-            show_notification(output_to_show)
-        else:
-            show_notification(
-                f"Error with {command_name}, {result.stdout}, {result.stderr}"
-            )
-
-
-def on_release(key: Union[keyboard.Key, keyboard.KeyCode, None]):
-    current_keys.discard(key)
-"""
+    # Check again in 100ms
+    view.root.after(100, check_stop_event)
 
 
 def main():
@@ -82,18 +32,25 @@ def main():
     # - -v verbose mode
     # - overlay=disabled
 
-    my_keyboard = MyKeyboard(notify_to=[])
-    view = PrinterView()
-    print("here1")
-    bindake = Bindake(my_keyboard=my_keyboard, view=view)
-    print("here2")
+    mc = MakefileConfig(filepath="./Makefile.sample")
+    print(mc.read_file_lines())
+
+    # Register signal handlers
+    signal.signal(signal.SIGINT, handle_exit)  # Ctrl+C
+    signal.signal(signal.SIGTERM, handle_exit)  # kill <pid>
+
+    # Start periodic checking
+    view.root.after(100, check_stop_event)
+
     my_keyboard.notify_to = [bindake]
-    print("here3")
 
     thread = threading.Thread(target=bindake.loop, daemon=True)
     thread.start()
 
-    view.run()
+    try:
+        view.run()  # blocks
+    except KeyboardInterrupt:
+        handle_exit(signal.SIGINT, None)
 
 
 if __name__ == "__main__":

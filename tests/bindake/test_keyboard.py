@@ -1,3 +1,4 @@
+import threading
 from dataclasses import dataclass, field
 
 from pynput.keyboard import Key
@@ -19,7 +20,8 @@ class KeyboardTestListener(MessagePasser):
 def test_keyboard_happy_path():
     listener = KeyboardTestListener()
 
-    keyboard = MyKeyboard(notify_to=[listener])
+    stop_event = threading.Event()
+    keyboard = MyKeyboard(notify_to=[listener], stop_event=stop_event)
     listener.clear()
 
     if keyboard.notify_to:

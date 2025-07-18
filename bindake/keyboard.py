@@ -1,5 +1,6 @@
 import copy
 import time
+import threading
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -33,10 +34,9 @@ class CurrentKeyboardKey:
 @dataclass
 class MyKeyboard(MessagePasser):
     notify_to: Optional[list[MessagePasser]]
+    stop_event: threading.Event
     current_keys: set[CurrentKeyboardKey] = field(default_factory=set)
-
-    def receive(self, message: dict):
-        print(f"my keyboard .. msg received {message}")
+    listener: pynput.keyboard.Listener | None = None
 
     def notify(self, message, destinations: list[MessagePasser]):
         for destination in destinations:
@@ -58,15 +58,18 @@ class MyKeyboard(MessagePasser):
         self.garbage_collect()
         self.notify(self.notification_state_message(), self.notify_to or [])
 
-    def notification_state_message(self):
+    def simplified_current_keys(self):
         simplified_keys = set()
 
         for k in self.current_keys:
             simplified_keys.add(k.key)
 
+        return simplified_keys
+
+    def notification_state_message(self):
         return {
             "origin": "MyKeyboard",
-            "current_keys": simplified_keys,
+            "current_keys": self.simplified_current_keys(),
         }
 
     def garbage_collect(self):
@@ -85,4 +88,7 @@ class MyKeyboard(MessagePasser):
             on_press=self.on_press,
             on_release=self.on_release,
         ) as listener:
-            listener.join()
+            while not self.stop_event.is_set():
+                time.sleep(0.1)
+
+            listener.stop()

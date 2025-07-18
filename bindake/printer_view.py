@@ -31,6 +31,19 @@ class PrinterView(MessagePasser):
         self.max_alpha = 0.85
 
     def show(self, text: str, display_duration_ms: int = 1000):
+        self.root.after(0, self._show_impl, text, display_duration_ms)
+
+    def is_view_destroyed(self):
+        try:
+            return not self.root.winfo_exists()
+        except tk.TclError:
+            return True
+
+    def destroy(self):
+        if not self.is_view_destroyed():
+            self.root.destroy()
+
+    def _show_impl(self, text: str, display_duration_ms: int):
         self.label.config(text=text)
 
         self.root.update_idletasks()
