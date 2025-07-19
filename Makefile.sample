@@ -16,3 +16,6 @@ chrome:
         google-chrome &
     fi
     echo "Chrome Browser
+
+other-cmd:
+    ls -la
