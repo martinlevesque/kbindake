@@ -14,12 +14,12 @@ ALT_R_KEYS = {"<65027>", "alt_r"}
 
 
 @dataclass(frozen=True)
-class CurrentKeyboardKey:
+class KeyboardKey:
     key: str
     t: float = time.time()
 
     def __eq__(self, other):
-        if not isinstance(other, CurrentKeyboardKey):
+        if not isinstance(other, KeyboardKey):
             return NotImplemented
 
         return self.key == other.key
@@ -35,7 +35,7 @@ class CurrentKeyboardKey:
 class MyKeyboard(MessagePasser):
     notify_to: Optional[list[MessagePasser]]
     stop_event: threading.Event
-    current_keys: set[CurrentKeyboardKey] = field(default_factory=set)
+    current_keys: set[KeyboardKey] = field(default_factory=set)
     listener: pynput.keyboard.Listener | None = None
 
     def notify(self, message, destinations: list[MessagePasser]):
@@ -43,17 +43,13 @@ class MyKeyboard(MessagePasser):
             destination.receive(message)
 
     def on_press(self, key):
-        self.current_keys.add(
-            CurrentKeyboardKey(key=self.strip_key(key), t=time.time())
-        )
+        self.current_keys.add(KeyboardKey(key=self.strip_key(key), t=time.time()))
 
         self.garbage_collect()
         self.notify(self.notification_state_message(), self.notify_to or [])
 
     def on_release(self, key):
-        self.current_keys.discard(
-            CurrentKeyboardKey(key=self.strip_key(key), t=time.time())
-        )
+        self.current_keys.discard(KeyboardKey(key=self.strip_key(key), t=time.time()))
 
         self.garbage_collect()
         self.notify(self.notification_state_message(), self.notify_to or [])
