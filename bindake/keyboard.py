@@ -43,18 +43,40 @@ class MyKeyboard(MessagePasser):
             destination.receive(message)
 
     def on_press(self, key):
-        self.current_keys.add(KeyboardKey(key=self.strip_key(key), t=time.time()))
+        self.current_keys.add(
+            KeyboardKey(key=MyKeyboard.normalize_key(key), t=time.time())
+        )
 
         self.garbage_collect()
         self.notify(self.notification_state_message(), self.notify_to or [])
 
     def on_release(self, key):
-        self.current_keys.discard(KeyboardKey(key=self.strip_key(key), t=time.time()))
+        self.current_keys.discard(
+            KeyboardKey(key=MyKeyboard.normalize_key(key), t=time.time())
+        )
 
         self.garbage_collect()
         self.notify(self.notification_state_message(), self.notify_to or [])
 
-    def simplified_current_keys(self):
+    @staticmethod
+    def keys() -> list[str]:
+        result = []
+
+        special_keys = [MyKeyboard.normalize_key(k) for k in list(pynput.keyboard.Key)]
+
+        # Printable character keys (you can expand as needed)
+        char_keys = [chr(c) for c in range(32, 127)]  # from space to ~ (ASCII)
+
+        # Combine all keys
+        result = special_keys + char_keys
+
+        return result
+
+    @staticmethod
+    def valid_key(key: str) -> bool:
+        return True
+
+    def normalized_current_keys(self):
         simplified_keys = set()
 
         for k in self.current_keys:
@@ -65,7 +87,7 @@ class MyKeyboard(MessagePasser):
     def notification_state_message(self):
         return {
             "origin": "MyKeyboard",
-            "current_keys": self.simplified_current_keys(),
+            "current_keys": self.normalized_current_keys(),
         }
 
     def garbage_collect(self):
@@ -74,8 +96,15 @@ class MyKeyboard(MessagePasser):
         }
         self.current_keys.difference_update(expired)
 
-    def strip_key(self, key) -> str:
-        s_key = str(key).removeprefix("Key.").replace("'", "")
+    @staticmethod
+    def normalize_key(key) -> str:
+        s_key = (
+            str(key)
+            .removeprefix("Key.")
+            .replace("'", "")
+            .replace("_", " ")
+            .capitalize()
+        )
 
         return s_key
 
