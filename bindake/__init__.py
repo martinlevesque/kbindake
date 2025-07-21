@@ -33,8 +33,9 @@ class Bindake(MessagePasser):
     def receive(self, message: dict):
         keys = message["current_keys"]
 
-        if keys == {"alt", "shift", "F"}:
-            self.view.show(f"{message['current_keys']}")
+        print(keys)
+        if keys == {"Alt", "Shift", "F"}:
+            self.view.show("Firefox")
 
     def destroy(self):
         self.stop_event.set()
