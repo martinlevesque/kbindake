@@ -33,7 +33,6 @@ class Bindake(MessagePasser):
     def receive(self, message: dict):
         keys = message["current_keys"]
 
-        print(keys)
         if keys == {"Alt", "Shift", "F"}:
             self.view.show("Firefox")
 

@@ -1,4 +1,7 @@
 
+run:
+	python main.py
+
 pyright:
 	pyright
 
