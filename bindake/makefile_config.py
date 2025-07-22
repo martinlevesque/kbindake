@@ -24,7 +24,7 @@ class MakefileConfig:
 
         if match:
             command_str = match.group(1)
-            commands = [cmd.strip() for cmd in command_str.split("+")]
+            commands = [cmd.strip().lower() for cmd in command_str.split("+")]
 
             return {"commands": commands}
 
@@ -51,7 +51,7 @@ class MakefileConfig:
                     command = self.parse_command(line)
 
                     if command:
-                        keys = "+".join(binding["commands"])
+                        keys = "+".join(sorted(binding["commands"]))
                         self.bindings[keys] = Binding(command=command)
 
             previous_line = line
