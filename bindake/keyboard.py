@@ -1,6 +1,7 @@
 import copy
 import time
 import threading
+from functools import lru_cache
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -59,7 +60,8 @@ class MyKeyboard(MessagePasser):
         self.notify(self.notification_state_message(), self.notify_to or [])
 
     @staticmethod
-    def keys() -> list[str]:
+    @lru_cache(maxsize=1)
+    def keys() -> tuple[str, ...]:
         result = []
 
         special_keys = [MyKeyboard.normalize_key(k) for k in list(pynput.keyboard.Key)]
@@ -67,14 +69,11 @@ class MyKeyboard(MessagePasser):
         # Printable character keys (you can expand as needed)
         char_keys = [chr(c) for c in range(32, 127)]  # from space to ~ (ASCII)
 
-        # Combine all keys
-        result = special_keys + char_keys
-
-        return result
+        return tuple(special_keys + char_keys)
 
     @staticmethod
     def valid_key(key: str) -> bool:
-        return True
+        return key in MyKeyboard.keys()
 
     def normalized_current_keys(self):
         simplified_keys = set()

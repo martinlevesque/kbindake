@@ -62,3 +62,8 @@ def test_keys():
     assert "B" in result
     assert "1" in result
     assert "-" in result
+
+
+def test_valid_key():
+    assert MyKeyboard.valid_key("Ctrl")
+    assert not MyKeyboard.valid_key("Invalid")
