@@ -32,6 +32,10 @@ def main():
     # - -v verbose mode
     # - overlay=disabled
 
+    makefile = MakefileConfig(filepath="./Makefile.sample")
+    makefile.parse()
+    bindake.makefile = makefile
+
     # Register signal handlers
     signal.signal(signal.SIGINT, handle_exit)  # Ctrl+C
     signal.signal(signal.SIGTERM, handle_exit)  # kill <pid>
