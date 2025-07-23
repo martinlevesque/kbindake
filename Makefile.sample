@@ -16,6 +16,5 @@ chrome:
 	fi; \
 	echo "Chrome Browser"
 
-# bindake: Shift r+Cmd r+S
 other-cmd:
 	ls -la
