@@ -27,10 +27,10 @@ class PrinterView(MessagePasser):
 
         self.root.withdraw()
         self.fade_in_ms = 200
-        self.fade_out_ms = 2000
+        self.fade_out_ms = 500
         self.max_alpha = 0.85
 
-    def show(self, text: str, display_duration_ms: int = 1000):
+    def show(self, text: str, display_duration_ms: int = 500):
         self.root.after(0, self._show_impl, text, display_duration_ms)
 
     def is_view_destroyed(self):

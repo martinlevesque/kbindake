@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Dict, Any, FrozenSet
 import re
+import subprocess
 
 from bindake.keyboard import KeyboardKey
 
@@ -57,3 +58,20 @@ class MakefileConfig:
             previous_line = line
 
         return self.bindings
+
+    def execute(self, command):
+        result = subprocess.run(
+            ["make", "-s", "-f", self.filepath, command],
+            capture_output=True,
+            text=True
+        )
+
+        status_code = result.returncode
+        stdout = result.stdout
+        stderr = result.stderr
+
+        return {
+            "status_code": status_code,
+            "stdout": stdout,
+            "stderr": stderr
+        }

@@ -37,7 +37,14 @@ class Bindake(MessagePasser):
         keys_str = "+".join(keys)
 
         if self.makefile and self.makefile.bindings.get(keys_str, None):
-            self.view.show(self.makefile.bindings[keys_str].command)
+            command = self.makefile.bindings[keys_str].command
+            result = self.makefile.execute(command)
+
+            if result["status_code"] == 0:
+                self.view.show(command)
+            else:
+                output = f"{result['stdout']} {result['stderr']}"
+                self.view.show(output)
 
     def destroy(self):
         self.stop_event.set()

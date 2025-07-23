@@ -1,5 +1,4 @@
-
-# bindake: Cmd R+Shift r+F
+# bindake: Shift r+Cmd r+F
 firefox:
 	if pgrep -x firefox-bin > /dev/null; then \
 		wmctrl -xa firefox; \
@@ -8,14 +7,15 @@ firefox:
 	fi; \
 	echo "Firefox Browser"
 
-# bindake: Cmd R+Shift r+C
+# bindake: Shift r+Cmd r+C
 chrome:
-    if pgrep -x chrome > /dev/null; then
-        wmctrl -xa google-chrome
-    else
-        google-chrome &
-    fi
-    echo "Chrome Browser
+	if pgrep -x chrome > /dev/null; then \
+		wmctrl -xa google-chrome; \
+	else \
+		setsid google-chrome > /dev/null 2>&1 < /dev/null & \
+	fi; \
+	echo "Chrome Browser"
 
+# bindake: Shift r+Cmd r+S
 other-cmd:
-    ls -la
+	ls -la

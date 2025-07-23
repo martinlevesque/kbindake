@@ -8,7 +8,7 @@ from typing import Optional
 from lib.message_passer import MessagePasser
 import pynput
 
-KEY_HISTORY_TIMEOUT = 10  # in sec, after this interval the key is from the history
+KEY_HISTORY_TIMEOUT = 60  # in sec, after this interval the key is from the history
 
 ALT_L_KEYS = {"<65511>", "alt"}
 ALT_R_KEYS = {"<65027>", "alt_r"}
