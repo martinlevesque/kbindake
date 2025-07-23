@@ -8,7 +8,7 @@ from typing import Optional
 from lib.message_passer import MessagePasser
 import pynput
 
-KEY_HISTORY_TIMEOUT = 10  # in sec, after this interval the key is from the history
+KEY_HISTORY_TIMEOUT = 60  # in sec, after this interval the key is from the history
 
 ALT_L_KEYS = {"<65511>", "alt"}
 ALT_R_KEYS = {"<65027>", "alt_r"}
@@ -36,7 +36,7 @@ class KeyboardKey:
 class MyKeyboard(MessagePasser):
     notify_to: Optional[list[MessagePasser]]
     stop_event: threading.Event
-    current_keys: set[KeyboardKey] = field(default_factory=set)
+    current_keys: list[KeyboardKey] = field(default_factory=list)
     listener: pynput.keyboard.Listener | None = None
 
     def notify(self, message, destinations: list[MessagePasser]):
@@ -44,17 +44,21 @@ class MyKeyboard(MessagePasser):
             destination.receive(message)
 
     def on_press(self, key):
-        self.current_keys.add(
-            KeyboardKey(key=MyKeyboard.normalize_key(key), t=time.time())
-        )
+        new_keyboard_key = KeyboardKey(key=MyKeyboard.normalize_key(key), t=time.time())
+
+        if new_keyboard_key not in self.current_keys:
+            self.current_keys.append(new_keyboard_key)
 
         self.garbage_collect()
         self.notify(self.notification_state_message(), self.notify_to or [])
 
     def on_release(self, key):
-        self.current_keys.discard(
-            KeyboardKey(key=MyKeyboard.normalize_key(key), t=time.time())
+        keyboard_key_to_remove = KeyboardKey(
+            key=MyKeyboard.normalize_key(key), t=time.time()
         )
+
+        if keyboard_key_to_remove in self.current_keys:
+            self.current_keys.remove(keyboard_key_to_remove)
 
         self.garbage_collect()
         self.notify(self.notification_state_message(), self.notify_to or [])
@@ -76,12 +80,7 @@ class MyKeyboard(MessagePasser):
         return key in MyKeyboard.keys()
 
     def normalized_current_keys(self):
-        simplified_keys = set()
-
-        for k in self.current_keys:
-            simplified_keys.add(k.key)
-
-        return simplified_keys
+        return sorted([k.key.strip().lower() for k in self.current_keys])
 
     def notification_state_message(self):
         return {
@@ -93,7 +92,9 @@ class MyKeyboard(MessagePasser):
         expired = {
             k for k in self.current_keys if time.time() - k.t > KEY_HISTORY_TIMEOUT
         }
-        self.current_keys.difference_update(expired)
+
+        for k in expired:
+            self.current_keys.remove(k)
 
     @staticmethod
     def normalize_key(key) -> str:

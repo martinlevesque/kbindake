@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Dict, Any, FrozenSet
 import re
+import subprocess
 
 from bindake.keyboard import KeyboardKey
 
@@ -24,7 +25,7 @@ class MakefileConfig:
 
         if match:
             command_str = match.group(1)
-            commands = [cmd.strip() for cmd in command_str.split("+")]
+            commands = [cmd.strip().lower() for cmd in command_str.split("+")]
 
             return {"commands": commands}
 
@@ -51,9 +52,26 @@ class MakefileConfig:
                     command = self.parse_command(line)
 
                     if command:
-                        keys = "+".join(binding["commands"])
+                        keys = "+".join(sorted(binding["commands"]))
                         self.bindings[keys] = Binding(command=command)
 
             previous_line = line
 
         return self.bindings
+
+    def execute(self, command):
+        result = subprocess.run(
+            ["make", "-s", "-f", self.filepath, command],
+            capture_output=True,
+            text=True
+        )
+
+        status_code = result.returncode
+        stdout = result.stdout
+        stderr = result.stderr
+
+        return {
+            "status_code": status_code,
+            "stdout": stdout,
+            "stderr": stderr
+        }

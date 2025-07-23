@@ -29,15 +29,15 @@ def test_keyboard_happy_path():
 
         assert len(listener.messages) == 1
         assert listener.messages == [
-            {"origin": "MyKeyboard", "current_keys": {"Ctrl r"}}
+            {"origin": "MyKeyboard", "current_keys": ["ctrl r"]}
         ]
 
         keyboard.on_press(Key.ctrl)
 
         assert len(listener.messages) == 2
         assert listener.messages == [
-            {"origin": "MyKeyboard", "current_keys": {"Ctrl r"}},
-            {"origin": "MyKeyboard", "current_keys": {"Ctrl r", "Ctrl"}},
+            {"origin": "MyKeyboard", "current_keys": ["ctrl r"]},
+            {"origin": "MyKeyboard", "current_keys": ["ctrl", "ctrl r"]},
         ]
 
         listener.clear()
@@ -45,7 +45,7 @@ def test_keyboard_happy_path():
         keyboard.on_release(Key.ctrl)
         assert len(listener.messages) == 1
         assert listener.messages == [
-            {"origin": "MyKeyboard", "current_keys": {"Ctrl r"}}
+            {"origin": "MyKeyboard", "current_keys": ["ctrl r"]}
         ]
 
 

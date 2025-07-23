@@ -9,13 +9,12 @@ from bindake.printer_view import PrinterView
 
 stop_event = threading.Event()
 
-my_keyboard = MyKeyboard(notify_to=[], stop_event=stop_event)
-view = PrinterView()
-bindake = Bindake(my_keyboard=my_keyboard, view=view, stop_event=stop_event)
-
+g_bindake = None
+g_view = None
 
 def handle_exit(_signum, _frame):
-    bindake.destroy()
+    if g_bindake:
+        g_bindake.destroy()
 
 
 def check_stop_event():
@@ -24,13 +23,25 @@ def check_stop_event():
         return
 
     # Check again in 100ms
-    view.root.after(100, check_stop_event)
+    if g_view:
+        g_view.root.after(100, check_stop_event)
 
 
 def main():
     # args:
     # - -v verbose mode
     # - overlay=disabled
+    global g_bindake
+    global g_view
+    my_keyboard = MyKeyboard(notify_to=[], stop_event=stop_event)
+    view = PrinterView()
+    bindake = Bindake(my_keyboard=my_keyboard, view=view, stop_event=stop_event)
+    g_bindake = bindake
+    g_view = view
+
+    makefile = MakefileConfig(filepath="/home/martin/.config/bindake/Makefile")
+    makefile.parse()
+    bindake.makefile = makefile
 
     # Register signal handlers
     signal.signal(signal.SIGINT, handle_exit)  # Ctrl+C

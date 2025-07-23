@@ -3,6 +3,7 @@ import logging
 import sys
 import threading
 
+from bindake.makefile_config import MakefileConfig
 from lib.message_passer import MessagePasser
 
 # Configure logging
@@ -20,6 +21,7 @@ class Bindake(MessagePasser):
     my_keyboard: MyKeyboard
     view: PrinterView
     stop_event: threading.Event
+    makefile: MakefileConfig | None = None
 
     def info(self, message: str):
         logging.getLogger(__name__).info(message)
@@ -32,9 +34,17 @@ class Bindake(MessagePasser):
 
     def receive(self, message: dict):
         keys = message["current_keys"]
+        keys_str = "+".join(keys)
 
-        if keys == {"Alt", "Shift", "F"}:
-            self.view.show("Firefox")
+        if self.makefile and self.makefile.bindings.get(keys_str, None):
+            command = self.makefile.bindings[keys_str].command
+            result = self.makefile.execute(command)
+
+            if result["status_code"] == 0:
+                self.view.show(command)
+            else:
+                output = f"{result['stdout']} {result['stderr']}"
+                self.view.show(output)
 
     def destroy(self):
         self.stop_event.set()
