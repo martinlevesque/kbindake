@@ -4,6 +4,7 @@ import sys
 import threading
 
 from bindake.makefile_config import MakefileConfig
+from bindake.settings import Settings
 from lib.message_passer import MessagePasser
 
 # Configure logging
@@ -21,6 +22,7 @@ class Bindake(MessagePasser):
     my_keyboard: MyKeyboard
     view: PrinterView
     stop_event: threading.Event
+    settings: Settings
     makefile: MakefileConfig | None = None
 
     def info(self, message: str):
@@ -29,6 +31,10 @@ class Bindake(MessagePasser):
     def error(self, message: str):
         logging.getLogger(__name__).error(message)
 
+    def verbose_info(self, message: str):
+        if self.settings.verbose:
+            self.info(message)
+
     def __post_init__(self):
         self.info("Starting Bindake")
 
@@ -36,14 +42,19 @@ class Bindake(MessagePasser):
         keys = message["current_keys"]
         keys_str = "+".join(keys)
 
+        self.verbose_info(f"Key receive, current keys = {keys_str}")
+
         if self.makefile and self.makefile.bindings.get(keys_str, None):
             command = self.makefile.bindings[keys_str].command
+            self.verbose_info(f"   - key has a binding, command={command}, executing...")
             result = self.makefile.execute(command)
 
             if result["status_code"] == 0:
+                self.verbose_info(f"   [+] successful execution")
                 self.view.show(command)
             else:
                 output = f"{result['stdout']} {result['stderr']}"
+                self.verbose_info(f"   [-] erroneous execution")
                 self.view.show(output)
 
     def destroy(self):

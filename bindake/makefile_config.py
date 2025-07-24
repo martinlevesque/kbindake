@@ -61,17 +61,11 @@ class MakefileConfig:
 
     def execute(self, command):
         result = subprocess.run(
-            ["make", "-s", "-f", self.filepath, command],
-            capture_output=True,
-            text=True
+            ["make", "-s", "-f", self.filepath, command], capture_output=True, text=True
         )
 
         status_code = result.returncode
         stdout = result.stdout
         stderr = result.stderr
 
-        return {
-            "status_code": status_code,
-            "stdout": stdout,
-            "stderr": stderr
-        }
+        return {"status_code": status_code, "stdout": stdout, "stderr": stderr}

@@ -52,12 +52,12 @@ def test_keyboard_happy_path():
 def test_keys():
     result = MyKeyboard.keys()
 
-    assert "Ctrl" in result
-    assert "Ctrl r" in result
-    assert "Alt" in result
-    assert "Alt r" in result
-    assert "Cmd" in result
-    assert "Cmd r" in result
+    assert "ctrl" in result
+    assert "ctrl r" in result
+    assert "alt" in result
+    assert "alt r" in result
+    assert "cmd" in result
+    assert "cmd r" in result
     assert "b" in result
     assert "B" in result
     assert "1" in result
@@ -65,5 +65,5 @@ def test_keys():
 
 
 def test_valid_key():
-    assert MyKeyboard.valid_key("Ctrl")
+    assert MyKeyboard.valid_key("ctrl")
     assert not MyKeyboard.valid_key("Invalid")

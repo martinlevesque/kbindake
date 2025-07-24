@@ -53,12 +53,16 @@ class MyKeyboard(MessagePasser):
         self.notify(self.notification_state_message(), self.notify_to or [])
 
     def on_release(self, key):
-        keyboard_key_to_remove = KeyboardKey(
-            key=MyKeyboard.normalize_key(key), t=time.time()
-        )
+        normalized_key = MyKeyboard.normalize_key(key)
 
-        if keyboard_key_to_remove in self.current_keys:
-            self.current_keys.remove(keyboard_key_to_remove)
+        # Find and remove the key from current_keys
+        # Use a more robust search that doesn't rely on timing
+        keys_to_remove = [k for k in self.current_keys if k.key == normalized_key]
+
+        for key_to_remove in keys_to_remove:
+            self.current_keys.remove(key_to_remove)
+            # Only remove the first occurrence to handle multiple presses
+            break
 
         self.garbage_collect()
         self.notify(self.notification_state_message(), self.notify_to or [])
@@ -94,25 +98,35 @@ class MyKeyboard(MessagePasser):
         }
 
         for k in expired:
-            self.current_keys.remove(k)
+            if k in self.current_keys:
+                self.current_keys.remove(k)
 
     @staticmethod
     def normalize_key(key) -> str:
-        s_key = (
-            str(key)
-            .removeprefix("Key.")
-            .replace("'", "")
-            .replace("_", " ")
-            .capitalize()
-        )
-
-        return s_key
+        if hasattr(key, "name"):
+            # This is a special key (pynput.keyboard.Key)
+            return key.name.lower().replace("_", " ")
+        elif hasattr(key, "char") and key.char is not None:
+            # This is a character key
+            return key.char.lower()
+        else:
+            # Fallback to string representation
+            s_key = (
+                str(key)
+                .removeprefix("Key.")
+                .replace("'", "")
+                .replace("_", " ")
+                .lower()  # Changed to lowercase for consistency
+            )
+            return s_key
 
     def listen(self):
         with pynput.keyboard.Listener(
             on_press=self.on_press,
             on_release=self.on_release,
+            suppress=False,  # Make sure we don't suppress key events
         ) as listener:
+            self.listener = listener
             while not self.stop_event.is_set():
                 time.sleep(0.1)
 
