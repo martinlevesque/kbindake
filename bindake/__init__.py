@@ -46,7 +46,9 @@ class Bindake(MessagePasser):
 
         if self.makefile and self.makefile.bindings.get(keys_str, None):
             command = self.makefile.bindings[keys_str].command
-            self.verbose_info(f"   - key has a binding, command={command}, executing...")
+            self.verbose_info(
+                f"   - key has a binding, command={command}, executing..."
+            )
             result = self.makefile.execute(command)
 
             if result["status_code"] == 0:

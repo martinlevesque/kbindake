@@ -9,6 +9,7 @@ from bindake.keyboard import KeyboardKey
 @dataclass
 class Binding:
     command: str
+    autoboot: bool = False
 
 
 @dataclass
@@ -21,13 +22,18 @@ class MakefileConfig:
             return file.readlines()
 
     def parse_bindings(self, line):
-        match = re.match(r"^#\s*bindake:\s*([\w\s]+(?:\+[\w\s]+)*)$", line)
+        print(f"line is {line}")
+        match = re.match(
+            r"^#\s*bindake(\[(autoboot)?\])?:\s*([\w\s]+(?:\+[\w\s]+)*)$", line
+        )
 
         if match:
-            command_str = match.group(1)
+            autoboot_str = match.group(2)
+            command_str = match.group(3)
             commands = [cmd.strip().lower() for cmd in command_str.split("+")]
+            print(f"auto boot {autoboot_str}, cmd {command_str}")
 
-            return {"commands": commands}
+            return {"commands": commands, "autoboot": autoboot_str == "autoboot"}
 
         return None
 
@@ -53,7 +59,9 @@ class MakefileConfig:
 
                     if command:
                         keys = "+".join(sorted(binding["commands"]))
-                        self.bindings[keys] = Binding(command=command)
+                        self.bindings[keys] = Binding(
+                            command=command, autoboot=binding["autoboot"]
+                        )
 
             previous_line = line
 
