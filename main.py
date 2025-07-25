@@ -45,7 +45,7 @@ def read_args():
         "--boot-wait",
         type=int,
         default=30,
-        help="Wait N seconds before booting (default: 0)",
+        help="Wait N seconds before booting (default: 30)",
     )
     args: argparse.Namespace = parser.parse_args()
 

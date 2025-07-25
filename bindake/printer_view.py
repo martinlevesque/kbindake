@@ -1,6 +1,6 @@
-from lib.message_passer import MessagePasser
 import tkinter as tk
-import random
+from tkinter import font as tkfont
+from lib.message_passer import MessagePasser
 import settings
 
 
@@ -14,6 +14,9 @@ class PrinterView(MessagePasser):
         self.sw = self.root.winfo_screenwidth()
         self.sh = self.root.winfo_screenheight()
 
+        self.max_width = int(self.sw * 0.9)
+        self.max_height = int(self.sh * 0.5)
+
         self.label = tk.Label(
             self.root,
             text="",
@@ -22,6 +25,8 @@ class PrinterView(MessagePasser):
             bg=settings.OVERLAY_BACKGROUND_COLOR,
             padx=30,
             pady=20,
+            justify="left",
+            wraplength=self.max_width - 60,  # wrap within max width
         )
         self.label.pack()
 
@@ -32,7 +37,6 @@ class PrinterView(MessagePasser):
 
     def show(self, text: str, display_duration_ms: int = 500):
         nb_lines = len(str(text).split("\n"))
-
         self.root.after(0, self._show_impl, text, display_duration_ms * nb_lines)
 
     def is_view_destroyed(self):
@@ -49,8 +53,9 @@ class PrinterView(MessagePasser):
         self.label.config(text=text)
 
         self.root.update_idletasks()
-        w = self.label.winfo_reqwidth()
-        h = self.label.winfo_reqheight()
+        w = min(self.label.winfo_reqwidth(), self.max_width)
+        h = min(self.label.winfo_reqheight(), self.max_height)
+
         x = (self.sw // 2) - (w // 2)
         y = int(self.sh * 0.75)
 
