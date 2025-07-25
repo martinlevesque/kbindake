@@ -30,30 +30,62 @@ def check_stop_event():
         g_view.root.after(100, check_stop_event)
 
 
-def main():
-    time.sleep(30)
-    # args:
-    # - -v verbose mode
-    # - overlay=disabled
+def read_args():
     settings = Settings()
     parser = argparse.ArgumentParser()
-    parser.add_argument('-v', '--verbose', action='store_true', default=False,
-                       help='Enable verbose output')
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        default=False,
+        help="Enable verbose output",
+    )
+    parser.add_argument(
+        "-s",
+        "--boot-wait",
+        type=int,
+        default=30,
+        help="Wait N seconds before booting (default: 0)",
+    )
     args: argparse.Namespace = parser.parse_args()
 
     settings.verbose = args.verbose
+    settings.boot_wait = args.boot_wait
+
+    return settings
+
+
+def autoboot(makefile: MakefileConfig):
+    for _, binding in makefile.bindings.items():
+        if binding.autoboot:
+            makefile.execute(binding.command)
+
+
+def main():
+    # args:
+    # - -v verbose mode
+    # - overlay=disabled
+
+    settings = read_args()
+
+    if settings.boot_wait > 0:
+        time.sleep(settings.boot_wait)
 
     global g_bindake
     global g_view
     my_keyboard = MyKeyboard(notify_to=[], stop_event=stop_event)
     view = PrinterView()
-    bindake = Bindake(my_keyboard=my_keyboard, view=view, stop_event=stop_event, settings=settings)
+    bindake = Bindake(
+        my_keyboard=my_keyboard, view=view, stop_event=stop_event, settings=settings
+    )
     g_bindake = bindake
     g_view = view
 
     makefile = MakefileConfig(filepath="/home/martin/.config/bindake/Makefile")
     makefile.parse()
     bindake.makefile = makefile
+
+    autoboot(makefile)
 
     # Register signal handlers
     signal.signal(signal.SIGINT, handle_exit)  # Ctrl+C

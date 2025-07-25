@@ -45,13 +45,24 @@ class Bindake(MessagePasser):
         self.verbose_info(f"Key receive, current keys = {keys_str}")
 
         if self.makefile and self.makefile.bindings.get(keys_str, None):
-            command = self.makefile.bindings[keys_str].command
-            self.verbose_info(f"   - key has a binding, command={command}, executing...")
+            binding = self.makefile.bindings[keys_str]
+            command = binding.command
+            self.verbose_info(
+                f"   - key has a binding, command={command}, executing..."
+            )
             result = self.makefile.execute(command)
 
             if result["status_code"] == 0:
                 self.verbose_info(f"   [+] successful execution")
-                self.view.show(command)
+
+                display_content = ""
+
+                if binding.overlay_command_output:
+                    display_content = f"{result['stdout']}".strip()
+                else:
+                    display_content = command
+
+                self.view.show(display_content)
             else:
                 output = f"{result['stdout']} {result['stderr']}"
                 self.verbose_info(f"   [-] erroneous execution")
