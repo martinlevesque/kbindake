@@ -41,6 +41,12 @@ class MakefileConfig:
 
         return None
 
+    @staticmethod
+    def human_key_to_normalized(input: str) -> str:
+        keys = input.strip().lower().split("+")
+
+        return "+".join(sorted(keys))
+
     def parse_command(self, line):
         match = re.match(r"^\s*([A-Za-z0-9_\-./]+)\s*:\s*(.*)?$", line)
 

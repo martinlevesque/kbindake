@@ -7,7 +7,8 @@ from bindake import Bindake
 from bindake.keyboard import MyKeyboard
 from bindake.makefile_config import MakefileConfig
 from bindake.printer_view import PrinterView
-from bindake.settings import Settings
+from bindake.arg_settings import ArgSettings
+from bindake.keyboard import MyKeyboard
 
 stop_event = threading.Event()
 
@@ -31,7 +32,7 @@ def check_stop_event():
 
 
 def read_args():
-    settings = Settings()
+    settings = ArgSettings()
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-v",
@@ -47,10 +48,20 @@ def read_args():
         default=30,
         help="Wait N seconds before booting (default: 30)",
     )
+    parser.add_argument(
+        "--bindings-overlay-key",
+        type=str,
+        default="",
+        help="When pressing the key it shows what are the current key bindings",
+    )
     args: argparse.Namespace = parser.parse_args()
 
     settings.verbose = args.verbose
     settings.boot_wait = args.boot_wait
+    settings.bindings_overlay_key = MakefileConfig.human_key_to_normalized(
+        str(args.bindings_overlay_key)
+    )
+    print(f"bindings overlay kk {settings.bindings_overlay_key}")
 
     return settings
 
