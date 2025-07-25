@@ -10,6 +10,8 @@ def test_makefile_config_happy_path():
 
     assert bindings["cmd r+f+shift r"].command == "firefox"
     assert bindings["cmd r+f+shift r"].autoboot
+    assert bindings["cmd r+f+shift r"].overlay_command_output
 
     assert bindings["c+cmd r+shift r"].command == "chrome"
     assert not bindings["c+cmd r+shift r"].autoboot
+    assert not bindings["c+cmd r+shift r"].overlay_command_output

@@ -10,6 +10,7 @@ from bindake.keyboard import KeyboardKey
 class Binding:
     command: str
     autoboot: bool = False
+    overlay_command_output: bool = False
 
 
 @dataclass
@@ -22,23 +23,26 @@ class MakefileConfig:
             return file.readlines()
 
     def parse_bindings(self, line):
-        print(f"line is {line}")
         match = re.match(
-            r"^#\s*bindake(\[(autoboot)?\])?:\s*([\w\s]+(?:\+[\w\s]+)*)$", line
+            r"^#\s*bindake(\[((overlay-command-output|autoboot),?)*\])?:\s*([\w\s]+(?:\+[\w\s]+)*)$",
+            line,
         )
 
         if match:
-            autoboot_str = match.group(2)
-            command_str = match.group(3)
+            options_str = match.group(0)
+            command_str = match.group(4)
             commands = [cmd.strip().lower() for cmd in command_str.split("+")]
-            print(f"auto boot {autoboot_str}, cmd {command_str}")
 
-            return {"commands": commands, "autoboot": autoboot_str == "autoboot"}
+            return {
+                "commands": commands,
+                "autoboot": "autoboot" in options_str,
+                "overlay_command_output": "overlay-command-output" in options_str,
+            }
 
         return None
 
     def parse_command(self, line):
-        match = re.match(r"^\s*([A-Za-z0-9_\-./]+)\s*:\s*(#.*)?$", line)
+        match = re.match(r"^\s*([A-Za-z0-9_\-./]+)\s*:\s*(.*)?$", line)
 
         if match:
             return match.group(1)
@@ -60,7 +64,9 @@ class MakefileConfig:
                     if command:
                         keys = "+".join(sorted(binding["commands"]))
                         self.bindings[keys] = Binding(
-                            command=command, autoboot=binding["autoboot"]
+                            command=command,
+                            autoboot=binding["autoboot"],
+                            overlay_command_output=binding["overlay_command_output"],
                         )
 
             previous_line = line

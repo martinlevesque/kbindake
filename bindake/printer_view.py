@@ -31,7 +31,9 @@ class PrinterView(MessagePasser):
         self.max_alpha = 0.85
 
     def show(self, text: str, display_duration_ms: int = 500):
-        self.root.after(0, self._show_impl, text, display_duration_ms)
+        nb_lines = len(str(text).split("\n"))
+
+        self.root.after(0, self._show_impl, text, display_duration_ms * nb_lines)
 
     def is_view_destroyed(self):
         try:

@@ -55,6 +55,12 @@ def read_args():
     return settings
 
 
+def autoboot(makefile: MakefileConfig):
+    for _, binding in makefile.bindings.items():
+        if binding.autoboot:
+            makefile.execute(binding.command)
+
+
 def main():
     # args:
     # - -v verbose mode
@@ -78,6 +84,8 @@ def main():
     makefile = MakefileConfig(filepath="/home/martin/.config/bindake/Makefile")
     makefile.parse()
     bindake.makefile = makefile
+
+    autoboot(makefile)
 
     # Register signal handlers
     signal.signal(signal.SIGINT, handle_exit)  # Ctrl+C

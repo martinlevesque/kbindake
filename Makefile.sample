@@ -1,4 +1,4 @@
-# bindake[autoboot]: Shift r+Cmd r+F
+# bindake[autoboot,overlay-command-output]: Shift r+Cmd r+F
 firefox:
 	if pgrep -x firefox-bin > /dev/null; then \
 		wmctrl -xa firefox; \
