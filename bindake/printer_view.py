@@ -51,13 +51,23 @@ class PrinterView(MessagePasser):
 
     def _show_impl(self, text: str, display_duration_ms: int):
         self.label.config(text=text)
+        nb_lines = len(text.split("\n"))
+        font_obj = tkfont.Font(font=settings.OVERLAY_FONT)
+        line_height = font_obj.metrics("linespace")
 
+        # Estimate height based on line count + padding
+        padding_vertical = 40  # from pady=20 (top + bottom)
+        estimated_height = nb_lines * line_height + padding_vertical
+        h = min(estimated_height, self.max_height)
+
+        self.label.config(
+            wraplength=self.max_width - 60
+        )  # ensure wrapping respects width
         self.root.update_idletasks()
         w = min(self.label.winfo_reqwidth(), self.max_width)
-        h = min(self.label.winfo_reqheight(), self.max_height)
 
         x = (self.sw // 2) - (w // 2)
-        y = int(self.sh * 0.75)
+        y = int(self.sh * 0.75) - (h // 2)
 
         self.root.geometry(f"{w}x{h}+{x}+{y}")
         self.root.deiconify()
