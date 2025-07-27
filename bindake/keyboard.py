@@ -3,12 +3,14 @@ import time
 import threading
 from functools import lru_cache
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Optional, Any
 
 from lib.message_passer import MessagePasser
 import pynput
 
-KEY_HISTORY_TIMEOUT = 20  # in sec, after this interval the key is removed from the history
+KEY_HISTORY_TIMEOUT = (
+    20  # in sec, after this interval the key is removed from the history
+)
 
 ALT_L_KEYS = {"<65511>", "alt"}
 ALT_R_KEYS = {"<65027>", "alt_r"}
@@ -17,16 +19,17 @@ ALT_R_KEYS = {"<65027>", "alt_r"}
 @dataclass(frozen=True)
 class KeyboardKey:
     key: str
+    raw: Any
     t: float = time.time()
 
     def __eq__(self, other):
         if not isinstance(other, KeyboardKey):
             return NotImplemented
 
-        return self.key == other.key
+        return self.raw == other.raw
 
     def __hash__(self):
-        return hash(self.key)
+        return hash(self.raw)
 
     def __str__(self):
         return self.key
@@ -44,7 +47,9 @@ class MyKeyboard(MessagePasser):
             destination.receive(message)
 
     def on_press(self, key):
-        new_keyboard_key = KeyboardKey(key=MyKeyboard.normalize_key(key), t=time.time())
+        new_keyboard_key = KeyboardKey(
+            key=MyKeyboard.normalize_key(key), t=time.time(), raw=key
+        )
 
         if new_keyboard_key not in self.current_keys:
             self.current_keys.append(new_keyboard_key)
@@ -53,11 +58,9 @@ class MyKeyboard(MessagePasser):
         self.notify(self.notification_state_message(), self.notify_to or [])
 
     def on_release(self, key):
-        normalized_key = MyKeyboard.normalize_key(key)
-
         # Find and remove the key from current_keys
         # Use a more robust search that doesn't rely on timing
-        keys_to_remove = [k for k in self.current_keys if k.key == normalized_key]
+        keys_to_remove = [k for k in self.current_keys if k.raw == key]
 
         for key_to_remove in keys_to_remove:
             self.current_keys.remove(key_to_remove)

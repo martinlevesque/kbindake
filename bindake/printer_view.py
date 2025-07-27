@@ -1,6 +1,6 @@
-from lib.message_passer import MessagePasser
 import tkinter as tk
-import random
+from tkinter import font as tkfont
+from lib.message_passer import MessagePasser
 import settings
 
 
@@ -14,6 +14,9 @@ class PrinterView(MessagePasser):
         self.sw = self.root.winfo_screenwidth()
         self.sh = self.root.winfo_screenheight()
 
+        self.max_width = int(self.sw * 0.9)
+        self.max_height = int(self.sh * 0.5)
+
         self.label = tk.Label(
             self.root,
             text="",
@@ -22,6 +25,8 @@ class PrinterView(MessagePasser):
             bg=settings.OVERLAY_BACKGROUND_COLOR,
             padx=30,
             pady=20,
+            justify="left",
+            wraplength=self.max_width - 60,  # wrap within max width
         )
         self.label.pack()
 
@@ -32,7 +37,6 @@ class PrinterView(MessagePasser):
 
     def show(self, text: str, display_duration_ms: int = 500):
         nb_lines = len(str(text).split("\n"))
-
         self.root.after(0, self._show_impl, text, display_duration_ms * nb_lines)
 
     def is_view_destroyed(self):
@@ -47,12 +51,23 @@ class PrinterView(MessagePasser):
 
     def _show_impl(self, text: str, display_duration_ms: int):
         self.label.config(text=text)
+        nb_lines = len(text.split("\n"))
+        font_obj = tkfont.Font(font=settings.OVERLAY_FONT)
+        line_height = font_obj.metrics("linespace")
 
+        # Estimate height based on line count + padding
+        padding_vertical = 40  # from pady=20 (top + bottom)
+        estimated_height = nb_lines * line_height + padding_vertical
+        h = min(estimated_height, self.max_height)
+
+        self.label.config(
+            wraplength=self.max_width - 60
+        )  # ensure wrapping respects width
         self.root.update_idletasks()
-        w = self.label.winfo_reqwidth()
-        h = self.label.winfo_reqheight()
+        w = min(self.label.winfo_reqwidth(), self.max_width)
+
         x = (self.sw // 2) - (w // 2)
-        y = int(self.sh * 0.75)
+        y = int(self.sh * 0.75) - (h // 2)
 
         self.root.geometry(f"{w}x{h}+{x}+{y}")
         self.root.deiconify()

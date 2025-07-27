@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class Settings:
+class ArgSettings:
     verbose: bool = False
     boot_wait: int = 30
+    bindings_overlay_key: str = ""

@@ -1,3 +1,5 @@
 
-- fix better show when multiple lines
 - on shortcut display menu shortcuts
+- fix ctrl+0)
+- support list keybindings (Ctrl,Ctrl
+- Support Super key

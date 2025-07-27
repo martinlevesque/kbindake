@@ -4,7 +4,7 @@ import sys
 import threading
 
 from bindake.makefile_config import MakefileConfig
-from bindake.settings import Settings
+from bindake.arg_settings import ArgSettings
 from lib.message_passer import MessagePasser
 
 # Configure logging
@@ -22,7 +22,7 @@ class Bindake(MessagePasser):
     my_keyboard: MyKeyboard
     view: PrinterView
     stop_event: threading.Event
-    settings: Settings
+    settings: ArgSettings
     makefile: MakefileConfig | None = None
 
     def info(self, message: str):
@@ -39,34 +39,51 @@ class Bindake(MessagePasser):
         self.info("Starting Bindake")
 
     def receive(self, message: dict):
+        if not self.makefile:
+            self.error("No makefile yet")
+            return
+
         keys = message["current_keys"]
         keys_str = "+".join(keys)
 
         self.verbose_info(f"Key receive, current keys = {keys_str}")
 
-        if self.makefile and self.makefile.bindings.get(keys_str, None):
+        if self.makefile.bindings.get(keys_str, None):
             binding = self.makefile.bindings[keys_str]
             command = binding.command
             self.verbose_info(
                 f"   - key has a binding, command={command}, executing..."
             )
-            result = self.makefile.execute(command)
+            self.execute_command(binding, command)
+        elif keys_str == self.settings.bindings_overlay_key:
+            output = ""
 
-            if result["status_code"] == 0:
-                self.verbose_info(f"   [+] successful execution")
+            for keys, binding in self.makefile.bindings.items():
+                output += f"{binding.command}: {keys}\n"
 
-                display_content = ""
+            self.view.show(output)
 
-                if binding.overlay_command_output:
-                    display_content = f"{result['stdout']}".strip()
-                else:
-                    display_content = command
+    def execute_command(self, binding, command: str):
+        if not self.makefile:
+            return
 
-                self.view.show(display_content)
+        result = self.makefile.execute(command)
+
+        if result["status_code"] == 0:
+            self.verbose_info(f"   [+] successful execution")
+
+            display_content = ""
+
+            if binding.overlay_command_output:
+                display_content = f"{result['stdout']}".strip()
             else:
-                output = f"{result['stdout']} {result['stderr']}"
-                self.verbose_info(f"   [-] erroneous execution")
-                self.view.show(output)
+                display_content = command
+
+            self.view.show(display_content)
+        else:
+            output = f"{result['stdout']} {result['stderr']}"
+            self.verbose_info(f"   [-] erroneous execution")
+            self.view.show(output)
 
     def destroy(self):
         self.stop_event.set()
