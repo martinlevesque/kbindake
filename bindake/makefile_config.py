@@ -24,7 +24,7 @@ class MakefileConfig:
 
     def parse_bindings(self, line):
         match = re.match(
-            r"^#\s*bindake(\[((overlay-command-output|autoboot),?)*\])?:\s*([\w\s]+(?:\+[\w\s]+)*)$",
+            r"^#\s*bindake(\[((overlay-command-output|autoboot),?)*\])?:\s*(.+)$",
             line,
         )
 

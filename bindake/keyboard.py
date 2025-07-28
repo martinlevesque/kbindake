@@ -7,6 +7,7 @@ from typing import Optional, Any
 
 from lib.message_passer import MessagePasser
 import pynput
+from pynput import keyboard
 
 KEY_HISTORY_TIMEOUT = (
     20  # in sec, after this interval the key is removed from the history
@@ -40,7 +41,7 @@ class MyKeyboard(MessagePasser):
     notify_to: Optional[list[MessagePasser]]
     stop_event: threading.Event
     current_keys: list[KeyboardKey] = field(default_factory=list)
-    listener: pynput.keyboard.Listener | None = None
+    listener: keyboard.Listener | None = None
 
     def notify(self, message, destinations: list[MessagePasser]):
         for destination in destinations:
@@ -75,7 +76,7 @@ class MyKeyboard(MessagePasser):
     def keys() -> tuple[str, ...]:
         result = []
 
-        special_keys = [MyKeyboard.normalize_key(k) for k in list(pynput.keyboard.Key)]
+        special_keys = [MyKeyboard.normalize_key(k) for k in list(keyboard.Key)]
 
         # Printable character keys (you can expand as needed)
         char_keys = [chr(c) for c in range(32, 127)]  # from space to ~ (ASCII)
@@ -107,7 +108,7 @@ class MyKeyboard(MessagePasser):
     @staticmethod
     def normalize_key(key) -> str:
         if hasattr(key, "name"):
-            # This is a special key (pynput.keyboard.Key)
+            # This is a special key (keyboard.Key)
             return key.name.lower().replace("_", " ")
         elif hasattr(key, "char") and key.char is not None:
             # This is a character key
@@ -124,9 +125,36 @@ class MyKeyboard(MessagePasser):
             return s_key
 
     def listen(self):
-        with pynput.keyboard.Listener(
-            on_press=self.on_press,
-            on_release=self.on_release,
+        def on_hotkey(hotkey_name, key_combo):
+            print(f"HOTKEY {hotkey_name} activated: {key_combo}")
+
+        def for_canonical(f):
+            return lambda k: f(listener.canonical(k))
+
+        hotkey = keyboard.HotKey(
+            keyboard.HotKey.parse("<cmd>+<shift>+f"),
+            lambda: on_hotkey("Hotkey 1", "<cmd>+<shift>+f"),
+        )
+        hotkey2 = keyboard.HotKey(
+            keyboard.HotKey.parse("<cmd>+<shift>+c"),
+            lambda: on_hotkey("Hotkey 2", "<cmd>+<shift>+c"),
+        )
+
+        hotkeys = [hotkey, hotkey2]
+
+        def on_press(key):
+            print(f"Pressed: {key} (canonical: {listener.canonical(key)})")
+
+            for hotkey in hotkeys:
+                hotkey.press(listener.canonical(key))
+
+        def on_release(key):
+            for hotkey in hotkeys:
+                hotkey.release(listener.canonical(key))
+
+        with keyboard.Listener(
+            on_press=on_press,
+            on_release=on_release,
             suppress=False,  # Make sure we don't suppress key events
         ) as listener:
             self.listener = listener
