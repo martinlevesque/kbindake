@@ -1,4 +1,4 @@
-# bindake[autoboot,overlay-command-output]: Shift r+Cmd r+F
+# bindake[autoboot,overlay-command-output]: <Cmd>+<Shift>+f
 firefox:
 	if pgrep -x firefox-bin > /dev/null; then \
 		wmctrl -xa firefox; \
@@ -7,7 +7,7 @@ firefox:
 	fi; \
 	echo "Firefox Browser"
 
-# bindake: Shift r+Cmd r+C
+# bindake: <Cmd>+<Shift>+c
 chrome:
 	if pgrep -x chrome > /dev/null; then \
 		wmctrl -xa google-chrome; \
