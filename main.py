@@ -3,6 +3,7 @@ import threading
 import sys
 import signal
 import argparse
+from pathlib import Path
 from bindake import Bindake
 from bindake.keyboard import MyKeyboard
 from bindake.makefile_config import MakefileConfig
@@ -49,7 +50,7 @@ def read_args():
         help="Wait N seconds before booting (default: 30)",
     )
     parser.add_argument(
-        "--bindings-overlay-key",
+        "--bindings-overlay-hotkey",
         type=str,
         default="",
         help="When pressing the key it shows what are the current key bindings",
@@ -58,10 +59,9 @@ def read_args():
 
     settings.verbose = args.verbose
     settings.boot_wait = args.boot_wait
-    settings.bindings_overlay_key = MakefileConfig.human_key_to_normalized(
-        str(args.bindings_overlay_key)
+    settings.bindings_overlay_hotkey = MakefileConfig.human_key_to_normalized(
+        str(args.bindings_overlay_hotkey)
     )
-    print(f"bindings overlay kk {settings.bindings_overlay_key}")
 
     return settings
 
@@ -84,7 +84,18 @@ def main():
 
     global g_bindake
     global g_view
-    my_keyboard = MyKeyboard(notify_to=[], stop_event=stop_event)
+
+    makefile = MakefileConfig(
+        filepath=(str(Path.home() / ".config" / "bindake" / "Makefile"))
+    )
+    makefile.parse()
+
+    hotkeys = list(makefile.bindings.keys())
+
+    if settings.bindings_overlay_hotkey:
+        hotkeys.append(settings.bindings_overlay_hotkey)
+
+    my_keyboard = MyKeyboard(notify_to=[], stop_event=stop_event, hotkeys=hotkeys)
     view = PrinterView()
     bindake = Bindake(
         my_keyboard=my_keyboard, view=view, stop_event=stop_event, settings=settings
@@ -92,8 +103,6 @@ def main():
     g_bindake = bindake
     g_view = view
 
-    makefile = MakefileConfig(filepath="/home/martin/.config/bindake/Makefile")
-    makefile.parse()
     bindake.makefile = makefile
 
     autoboot(makefile)

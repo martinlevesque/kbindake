@@ -43,19 +43,23 @@ class Bindake(MessagePasser):
             self.error("No makefile yet")
             return
 
-        keys = message["current_keys"]
-        keys_str = "+".join(keys)
+        if "hotkey_pressed" not in message:
+            self.verbose_info(f"Hotkey pressed but skipping, {message}")
+            return
 
-        self.verbose_info(f"Key receive, current keys = {keys_str}")
+        print(f"received {message}")
+        hotkey = message["hotkey_pressed"]
 
-        if self.makefile.bindings.get(keys_str, None):
-            binding = self.makefile.bindings[keys_str]
+        self.verbose_info(f"Hotkey receive, {hotkey}")
+
+        if self.makefile.bindings.get(hotkey, None):
+            binding = self.makefile.bindings[hotkey]
             command = binding.command
             self.verbose_info(
                 f"   - key has a binding, command={command}, executing..."
             )
             self.execute_command(binding, command)
-        elif keys_str == self.settings.bindings_overlay_key:
+        elif hotkey == self.settings.bindings_overlay_hotkey:
             output = ""
 
             for keys, binding in self.makefile.bindings.items():

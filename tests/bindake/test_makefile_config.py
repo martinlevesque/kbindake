@@ -1,4 +1,3 @@
-from bindake.keyboard import KeyboardKey
 from bindake.makefile_config import MakefileConfig
 
 

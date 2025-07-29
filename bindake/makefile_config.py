@@ -3,7 +3,7 @@ from typing import Dict, Any, FrozenSet
 import re
 import subprocess
 
-from bindake.keyboard import KeyboardKey
+from bindake import hotkey
 
 
 @dataclass
@@ -31,7 +31,7 @@ class MakefileConfig:
         if match:
             options_str = match.group(0)
             command_str = match.group(4)
-            commands = [cmd.strip().lower() for cmd in command_str.split("+")]
+            commands = hotkey.normalize_string_hotkey_to_list(command_str)
 
             return {
                 "commands": commands,

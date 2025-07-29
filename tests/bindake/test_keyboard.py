@@ -25,45 +25,18 @@ def test_keyboard_happy_path():
     listener.clear()
 
     if keyboard.notify_to:
-        keyboard.on_press(Key.ctrl_r)
+        keyboard.notify_hotkey("<cmd>+f")
 
         assert len(listener.messages) == 1
+        print(f"listener.message {listener.messages}")
         assert listener.messages == [
-            {"origin": "MyKeyboard", "current_keys": ["ctrl r"]}
+            {"origin": "MyKeyboard", "hotkey_pressed": "<cmd>+f"}
         ]
 
-        keyboard.on_press(Key.ctrl)
+        keyboard.notify_hotkey("<cmd>+c")
 
         assert len(listener.messages) == 2
         assert listener.messages == [
-            {"origin": "MyKeyboard", "current_keys": ["ctrl r"]},
-            {"origin": "MyKeyboard", "current_keys": ["ctrl", "ctrl r"]},
+            {"origin": "MyKeyboard", "hotkey_pressed": "<cmd>+f"},
+            {"origin": "MyKeyboard", "hotkey_pressed": "<cmd>+c"},
         ]
-
-        listener.clear()
-
-        keyboard.on_release(Key.ctrl)
-        assert len(listener.messages) == 1
-        assert listener.messages == [
-            {"origin": "MyKeyboard", "current_keys": ["ctrl r"]}
-        ]
-
-
-def test_keys():
-    result = MyKeyboard.keys()
-
-    assert "ctrl" in result
-    assert "ctrl r" in result
-    assert "alt" in result
-    assert "alt r" in result
-    assert "cmd" in result
-    assert "cmd r" in result
-    assert "b" in result
-    assert "B" in result
-    assert "1" in result
-    assert "-" in result
-
-
-def test_valid_key():
-    assert MyKeyboard.valid_key("ctrl")
-    assert not MyKeyboard.valid_key("Invalid")

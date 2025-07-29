@@ -5,4 +5,4 @@ from dataclasses import dataclass
 class ArgSettings:
     verbose: bool = False
     boot_wait: int = 30
-    bindings_overlay_key: str = ""
+    bindings_overlay_hotkey: str = ""
