@@ -63,7 +63,7 @@ class Bindake(MessagePasser):
             output = ""
 
             for keys, binding in self.makefile.bindings.items():
-                output += f"{binding.command}: {keys}\n"
+                output += f"{binding.command}: {binding.original_hotkey}\n"
 
             self.view.show(output)
 

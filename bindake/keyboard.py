@@ -7,13 +7,6 @@ from .hotkey import normalize_string_hotkey
 from lib.message_passer import MessagePasser
 from pynput import keyboard
 
-KEY_HISTORY_TIMEOUT = (
-    20  # in sec, after this interval the key is removed from the history
-)
-
-ALT_L_KEYS = {"<65511>", "alt"}
-ALT_R_KEYS = {"<65027>", "alt_r"}
-
 
 @dataclass
 class MyKeyboard(MessagePasser):
