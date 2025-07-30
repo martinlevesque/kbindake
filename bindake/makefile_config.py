@@ -9,6 +9,7 @@ from bindake import hotkey
 @dataclass
 class Binding:
     command: str
+    original_hotkey: str
     autoboot: bool = False
     overlay_command_output: bool = False
 
@@ -30,11 +31,12 @@ class MakefileConfig:
 
         if match:
             options_str = match.group(0)
-            command_str = match.group(4)
+            command_str = str(match.group(4))
             commands = hotkey.normalize_string_hotkey_to_list(command_str)
 
             return {
                 "commands": commands,
+                "original_commands": command_str,
                 "autoboot": "autoboot" in options_str,
                 "overlay_command_output": "overlay-command-output" in options_str,
             }
@@ -73,6 +75,7 @@ class MakefileConfig:
                             command=command,
                             autoboot=binding["autoboot"],
                             overlay_command_output=binding["overlay_command_output"],
+                            original_hotkey=binding["original_commands"],
                         )
 
             previous_line = line

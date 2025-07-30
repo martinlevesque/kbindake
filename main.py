@@ -10,6 +10,7 @@ from bindake.makefile_config import MakefileConfig
 from bindake.printer_view import PrinterView
 from bindake.arg_settings import ArgSettings
 from bindake.keyboard import MyKeyboard
+from bindake import hotkey
 
 stop_event = threading.Event()
 
@@ -59,7 +60,7 @@ def read_args():
 
     settings.verbose = args.verbose
     settings.boot_wait = args.boot_wait
-    settings.bindings_overlay_hotkey = MakefileConfig.human_key_to_normalized(
+    settings.bindings_overlay_hotkey = hotkey.normalize_string_hotkey(
         str(args.bindings_overlay_hotkey)
     )
 

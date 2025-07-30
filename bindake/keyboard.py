@@ -7,13 +7,6 @@ from .hotkey import normalize_string_hotkey
 from lib.message_passer import MessagePasser
 from pynput import keyboard
 
-KEY_HISTORY_TIMEOUT = (
-    20  # in sec, after this interval the key is removed from the history
-)
-
-ALT_L_KEYS = {"<65511>", "alt"}
-ALT_R_KEYS = {"<65027>", "alt_r"}
-
 
 @dataclass
 class MyKeyboard(MessagePasser):
@@ -40,43 +33,17 @@ class MyKeyboard(MessagePasser):
             normalized_hotkey = normalize_string_hotkey(key_combo)
             self.notify_hotkey(normalized_hotkey)
 
-        def for_canonical(f):
-            return lambda k: f(listener.canonical(k))
-
-        def build_hotkey(hotkey: str) -> keyboard.HotKey | None:
-            try:
-                return keyboard.HotKey(
-                    keyboard.HotKey.parse(hotkey),
-                    lambda: on_hotkey(hotkey, hotkey),
-                )
-            except ValueError:
-                return None
-
-        hotkeys = []
+        # Build hotkey dictionary for GlobalHotKeys
+        hotkey_dict = {}
 
         for h in self.hotkeys:
-            hotkey_object = build_hotkey(h)
-
-            if hotkey_object:
-                hotkeys.append(hotkey_object)
-            else:
+            try:
+                # Parse the hotkey string and create the callback
+                hotkey_dict[h] = lambda hotkey=h: on_hotkey(hotkey, hotkey)
+            except ValueError:
                 print(f"Invalid hotkey {h}")
 
-        def on_press(key):
-            for hotkey in hotkeys:
-                hotkey.press(listener.canonical(key))
-
-        def on_release(key):
-            for hotkey in hotkeys:
-                hotkey.release(listener.canonical(key))
-
-        with keyboard.Listener(
-            on_press=on_press,
-            on_release=on_release,
-            suppress=False,  # Make sure we don't suppress key events
-        ) as listener:
-            self.listener = listener
+        # Use GlobalHotKeys which handles suppression automatically
+        with keyboard.GlobalHotKeys(hotkey_dict) as hotkey_listener:
             while not self.stop_event.is_set():
                 time.sleep(0.1)
-
-            listener.stop()
