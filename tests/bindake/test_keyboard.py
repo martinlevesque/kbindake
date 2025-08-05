@@ -40,3 +40,21 @@ def test_keyboard_happy_path():
             {"origin": "MyKeyboard", "hotkey_pressed": "<cmd>+f"},
             {"origin": "MyKeyboard", "hotkey_pressed": "<cmd>+c"},
         ]
+
+
+def test_validate_hotkey_happy_path():
+    listener = KeyboardTestListener()
+
+    stop_event = threading.Event()
+    keyboard = MyKeyboard(notify_to=[listener], stop_event=stop_event)
+
+    assert keyboard.validate_hotkey("<ctrl>+f")
+
+
+def test_validate_hotkey_invalid_hotkey():
+    listener = KeyboardTestListener()
+
+    stop_event = threading.Event()
+    keyboard = MyKeyboard(notify_to=[listener], stop_event=stop_event)
+
+    assert not keyboard.validate_hotkey("<invalid>+f")
