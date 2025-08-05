@@ -7,10 +7,10 @@ def test_makefile_config_happy_path():
 
     assert len(bindings) == 2
 
-    assert bindings["<cmd>+<shift>+f"].command == "firefox"
-    assert bindings["<cmd>+<shift>+f"].autoboot
-    assert bindings["<cmd>+<shift>+f"].overlay_command_output
+    assert bindings["<cmd>+<ctrl>+f"].command == "firefox"
+    assert bindings["<cmd>+<ctrl>+f"].autoboot
+    assert bindings["<cmd>+<ctrl>+f"].overlay_command_output
 
-    assert bindings["<cmd>+<shift>+c"].command == "chrome"
-    assert not bindings["<cmd>+<shift>+c"].autoboot
-    assert not bindings["<cmd>+<shift>+c"].overlay_command_output
+    assert bindings["<cmd>+<ctrl>+g"].command == "chrome"
+    assert not bindings["<cmd>+<ctrl>+g"].autoboot
+    assert not bindings["<cmd>+<ctrl>+g"].overlay_command_output

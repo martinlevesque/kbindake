@@ -87,7 +87,7 @@ def main():
     global g_view
 
     makefile = MakefileConfig(
-        filepath=(str(Path.home() / ".config" / "bindake" / "Makefile"))
+        filepath=(str(Path.home() / ".config" / "kbindake" / "Makefile"))
     )
     makefile.parse()
 

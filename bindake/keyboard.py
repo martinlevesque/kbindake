@@ -28,6 +28,21 @@ class MyKeyboard(MessagePasser):
     def notify_hotkey(self, hotkey: str):
         self.notify(self.notification_state_message(hotkey), self.notify_to or [])
 
+    def validate_hotkey(self, hotkey: str) -> bool:
+        try:
+            # Try to create a temporary GlobalHotKeys instance to validate the hotkey
+            test_dict = {hotkey: lambda: None}
+            # This will raise an exception if the hotkey format is invalid
+            with keyboard.GlobalHotKeys(test_dict) as test_listener:
+                pass  # If we get here, the hotkey is valid
+            return True
+        except (ValueError, KeyError, AttributeError) as e:
+            print(f"Invalid hotkey '{hotkey}': {e}")
+            return False
+        except Exception as e:
+            print(f"Unexpected error validating hotkey '{hotkey}': {e}")
+            return False
+
     def listen(self):
         def on_hotkey(hotkey_name, key_combo):
             normalized_hotkey = normalize_string_hotkey(key_combo)
@@ -37,11 +52,9 @@ class MyKeyboard(MessagePasser):
         hotkey_dict = {}
 
         for h in self.hotkeys:
-            try:
+            if self.validate_hotkey(h):
                 # Parse the hotkey string and create the callback
                 hotkey_dict[h] = lambda hotkey=h: on_hotkey(hotkey, hotkey)
-            except ValueError:
-                print(f"Invalid hotkey {h}")
 
         # Use GlobalHotKeys which handles suppression automatically
         with keyboard.GlobalHotKeys(hotkey_dict) as hotkey_listener:
