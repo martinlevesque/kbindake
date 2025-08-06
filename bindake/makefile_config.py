@@ -3,6 +3,7 @@ from typing import Dict, Any, FrozenSet
 import re
 import subprocess
 
+from bindake import logger
 from bindake import hotkey
 
 
@@ -71,6 +72,10 @@ class MakefileConfig:
 
                     if command:
                         keys = "+".join(sorted(binding["commands"]))
+
+                        if keys in self.bindings:
+                            logger.warning(f"Hotkey {keys} already exists! Overriding.")
+
                         self.bindings[keys] = Binding(
                             command=command,
                             autoboot=binding["autoboot"],

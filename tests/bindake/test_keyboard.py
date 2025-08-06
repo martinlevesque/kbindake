@@ -28,7 +28,6 @@ def test_keyboard_happy_path():
         keyboard.notify_hotkey("<cmd>+f")
 
         assert len(listener.messages) == 1
-        print(f"listener.message {listener.messages}")
         assert listener.messages == [
             {"origin": "MyKeyboard", "hotkey_pressed": "<cmd>+f"}
         ]

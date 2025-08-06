@@ -1,18 +1,12 @@
 from dataclasses import dataclass
-import logging
 import sys
 import threading
 
 from bindake.makefile_config import MakefileConfig
 from bindake.arg_settings import ArgSettings
 from lib.message_passer import MessagePasser
+from bindake import logger
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,  # Or DEBUG for more detail
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
 from .keyboard import MyKeyboard
 from .printer_view import PrinterView
 
@@ -25,29 +19,22 @@ class Bindake(MessagePasser):
     settings: ArgSettings
     makefile: MakefileConfig | None = None
 
-    def info(self, message: str):
-        logging.getLogger(__name__).info(message)
-
-    def error(self, message: str):
-        logging.getLogger(__name__).error(message)
-
     def verbose_info(self, message: str):
         if self.settings.verbose:
-            self.info(message)
+            logger.info(message)
 
     def __post_init__(self):
-        self.info("Starting Bindake")
+        logger.info("Starting Bindake")
 
     def receive(self, message: dict):
         if not self.makefile:
-            self.error("No makefile yet")
+            logger.error("No makefile yet")
             return
 
         if "hotkey_pressed" not in message:
             self.verbose_info(f"Hotkey pressed but skipping, {message}")
             return
 
-        print(f"received {message}")
         hotkey = message["hotkey_pressed"]
 
         self.verbose_info(f"Hotkey receive, {hotkey}")
