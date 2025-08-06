@@ -106,4 +106,4 @@ class PrinterView(MessagePasser):
         self.root.mainloop()
 
     def receive(self, message: dict):
-        print(f"printer view received, {message}")
+        pass

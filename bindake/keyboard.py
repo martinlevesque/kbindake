@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from typing import Optional, Any
 from .hotkey import normalize_string_hotkey
 
+from bindake import logger
 from lib.message_passer import MessagePasser
 from pynput import keyboard
 
@@ -37,10 +38,10 @@ class MyKeyboard(MessagePasser):
                 pass  # If we get here, the hotkey is valid
             return True
         except (ValueError, KeyError, AttributeError) as e:
-            print(f"Invalid hotkey '{hotkey}': {e}")
+            logger.error(f"Invalid hotkey '{hotkey}': {e}")
             return False
         except Exception as e:
-            print(f"Unexpected error validating hotkey '{hotkey}': {e}")
+            logger.error(f"Unexpected error validating hotkey '{hotkey}': {e}")
             return False
 
     def listen(self):
