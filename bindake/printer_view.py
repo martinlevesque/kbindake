@@ -11,16 +11,7 @@ class PrinterView(MessagePasser):
         self.root.attributes("-topmost", True)
         self.root.configure(bg=settings.OVERLAY_BACKGROUND_COLOR)
 
-        active_size = self.get_active_monitor_size()
-
-        if active_size:
-            self.sw, self.sh = active_size
-        else:
-            self.sw = self.root.winfo_screenwidth()
-            self.sh = self.root.winfo_screenheight()
-
-        self.max_width = int(self.sw * 0.9)
-        self.max_height = int(self.sh * 0.9)
+        self.update_screen_dimensions()
 
         # Store base font info for dynamic sizing
         self.base_font_family = settings.OVERLAY_FONT[0] if isinstance(settings.OVERLAY_FONT, tuple) else "Arial"
@@ -45,6 +36,18 @@ class PrinterView(MessagePasser):
         self.fade_out_ms = 500
         self.max_alpha = 0.85
 
+    def update_screen_dimensions(self):
+        active_size = self.get_active_monitor_size()
+
+        if active_size:
+            self.sw, self.sh = active_size
+        else:
+            self.sw = self.root.winfo_screenwidth()
+            self.sh = self.root.winfo_screenheight()
+
+        self.max_width = int(self.sw * 0.9)
+        self.max_height = int(self.sh * 0.9)
+
     def get_mouse_position(self):
         x = self.root.winfo_pointerx()
         y = self.root.winfo_pointery()
@@ -53,9 +56,18 @@ class PrinterView(MessagePasser):
 
     def get_active_monitor_size(self):
         mouse_x, mouse_y = self.get_mouse_position()
+        print(f"mouse {mouse_x} {mouse_y}")
+
+        # monitor 1 w1 h1
+        # monitor 2 w2 h2
+
+        # if we are in monitor 2, we should add w1 + w2 //2
+        # check if order is correct
+
         for m in get_monitors():
-            print(f"cur monitor {m}")
+            print(f"monitor {m}")
             if m.x <= mouse_x < m.x + m.width and m.y <= mouse_y < m.y + m.height:
+                print(f"cur monitor = {m}")
                 return m.width, m.height
 
         return None
@@ -71,6 +83,7 @@ class PrinterView(MessagePasser):
         return new_size
 
     def show(self, text: str, display_duration_ms: int = 500):
+        self.update_screen_dimensions()
         nb_lines = len(str(text).split("\n"))
         self.root.after(0, self._show_impl, text, display_duration_ms * nb_lines)
 
