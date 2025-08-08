@@ -1,4 +1,5 @@
 import tkinter as tk
+from screeninfo import get_monitors
 from tkinter import font as tkfont
 from lib.message_passer import MessagePasser
 import settings
@@ -9,14 +10,23 @@ class PrinterView(MessagePasser):
         self.root.overrideredirect(True)
         self.root.attributes("-topmost", True)
         self.root.configure(bg=settings.OVERLAY_BACKGROUND_COLOR)
-        self.sw = self.root.winfo_screenwidth()
-        self.sh = self.root.winfo_screenheight()
+
+        active_size = self.get_active_monitor_size()
+
+        if active_size:
+            self.sw, self.sh = active_size
+        else:
+            self.sw = self.root.winfo_screenwidth()
+            self.sh = self.root.winfo_screenheight()
+
         self.max_width = int(self.sw * 0.9)
         self.max_height = int(self.sh * 0.9)
 
         # Store base font info for dynamic sizing
         self.base_font_family = settings.OVERLAY_FONT[0] if isinstance(settings.OVERLAY_FONT, tuple) else "Arial"
         self.base_font_size = settings.OVERLAY_FONT[1] if isinstance(settings.OVERLAY_FONT, tuple) else 12
+        self.max_font_size = self.base_font_size
+        self.min_font_size = settings.OVERLAY_MIN_FONT_SIZE
 
         self.label = tk.Label(
             self.root,
@@ -35,29 +45,28 @@ class PrinterView(MessagePasser):
         self.fade_out_ms = 500
         self.max_alpha = 0.85
 
+    def get_mouse_position(self):
+        x = self.root.winfo_pointerx()
+        y = self.root.winfo_pointery()
+
+        return x, y
+
+    def get_active_monitor_size(self):
+        mouse_x, mouse_y = self.get_mouse_position()
+        for m in get_monitors():
+            print(f"cur monitor {m}")
+            if m.x <= mouse_x < m.x + m.width and m.y <= mouse_y < m.y + m.height:
+                return m.width, m.height
+
+        return None
+
     def calculate_optimal_font_size(self, text: str):
         """Calculate optimal font size based on text length and screen size"""
         text_length = len(text)
         nb_lines = len(text.split("\n"))
 
-        # Base scaling factors
-        if text_length < 100:
-            scale_factor = 1.0  # Use original size for short text
-        elif text_length < 300:
-            scale_factor = 0.85  # Slightly smaller for medium text
-        elif text_length < 600:
-            scale_factor = 0.7   # Smaller for longer text
-        else:
-            scale_factor = 0.6   # Much smaller for very long text
-
-        # Additional scaling based on number of lines
-        if nb_lines > 10:
-            scale_factor *= 0.9
-        elif nb_lines > 20:
-            scale_factor *= 0.8
-
         # Calculate new font size
-        new_size = max(8, int(self.base_font_size * scale_factor))  # Minimum size of 8
+        new_size = settings.overlay_font_size(nb_lines)
 
         return new_size
 
