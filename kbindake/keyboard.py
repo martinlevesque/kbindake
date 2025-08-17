@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Optional, Any
 from .hotkey import normalize_string_hotkey
 
-from bindake import logger
+from kbindake import logger
 from lib.message_passer import MessagePasser
 from pynput import keyboard
 

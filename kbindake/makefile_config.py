@@ -3,8 +3,8 @@ from typing import Dict, Any, FrozenSet
 import re
 import subprocess
 
-from bindake import logger
-from bindake import hotkey
+from kbindake import logger
+from kbindake import hotkey
 
 
 @dataclass
@@ -26,7 +26,7 @@ class MakefileConfig:
 
     def parse_bindings(self, line):
         match = re.match(
-            r"^#\s*bindake(\[((overlay-command-output|autoboot),?)*\])?:\s*(.+)$",
+            r"^#\s*kbindake(\[((overlay-command-output|autoboot),?)*\])?:\s*(.+)$",
             line,
         )
 

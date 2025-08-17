@@ -2,10 +2,10 @@ from dataclasses import dataclass
 import sys
 import threading
 
-from bindake.makefile_config import MakefileConfig
-from bindake.arg_settings import ArgSettings
+from kbindake.makefile_config import MakefileConfig
+from kbindake.arg_settings import ArgSettings
 from lib.message_passer import MessagePasser
-from bindake import logger
+from kbindake import logger
 
 from .keyboard import MyKeyboard
 from .printer_view import PrinterView
