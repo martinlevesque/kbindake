@@ -97,3 +97,11 @@ class MakefileConfig:
         stderr = result.stderr
 
         return {"status_code": status_code, "stdout": stdout, "stderr": stderr}
+
+    def __str__(self):
+        result = ""
+
+        for _, binding in self.bindings.items():
+            result += f"{binding.original_hotkey}: {binding.command}\n"
+
+        return result
