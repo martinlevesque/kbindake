@@ -11,6 +11,7 @@ from kbindake.printer_view import PrinterView
 from kbindake.arg_settings import ArgSettings
 from kbindake.keyboard import MyKeyboard
 from kbindake import hotkey
+from kbindake import logger
 
 stop_event = threading.Event()
 
@@ -31,6 +32,10 @@ def check_stop_event():
     # Check again in 100ms
     if g_view:
         g_view.root.after(100, check_stop_event)
+
+
+def default_makefile_path():
+    return str(Path.home() / ".config" / "kbindake" / "Makefile")
 
 
 def read_args():
@@ -56,6 +61,12 @@ def read_args():
         default="",
         help="When pressing the key it shows what are the current key bindings",
     )
+    parser.add_argument(
+        "--makefile",
+        type=str,
+        default=default_makefile_path(),
+        help="Custom makefile path",
+    )
     args: argparse.Namespace = parser.parse_args()
 
     settings.verbose = args.verbose
@@ -63,6 +74,7 @@ def read_args():
     settings.bindings_overlay_hotkey = hotkey.normalize_string_hotkey(
         str(args.bindings_overlay_hotkey)
     )
+    settings.makefile = args.makefile
 
     return settings
 
@@ -86,10 +98,12 @@ def main():
     global g_bindake
     global g_view
 
-    makefile = MakefileConfig(
-        filepath=(str(Path.home() / ".config" / "kbindake" / "Makefile"))
-    )
+    makefile = MakefileConfig(filepath=settings.makefile)
     makefile.parse()
+
+    if settings.verbose:
+        # print out the bindings setup
+        logger.info(f"loaded bindings:\n\n{makefile}\n")
 
     hotkeys = list(makefile.bindings.keys())
 
