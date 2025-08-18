@@ -1,5 +1,5 @@
 import tkinter as tk
-from screeninfo import get_monitors
+from screeninfo import get_monitors, Monitor
 from tkinter import font as tkfont
 from lib.message_passer import MessagePasser
 import settings
@@ -70,7 +70,7 @@ class PrinterView(MessagePasser):
 
         return x, y
 
-    def get_active_monitor(self):
+    def get_active_monitor(self) -> Monitor | None:
         mouse_x, mouse_y = self.get_mouse_position()
 
         for m in get_monitors():
