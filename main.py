@@ -4,13 +4,13 @@ import sys
 import signal
 import argparse
 from pathlib import Path
-from bindake import Bindake
-from bindake.keyboard import MyKeyboard
-from bindake.makefile_config import MakefileConfig
-from bindake.printer_view import PrinterView
-from bindake.arg_settings import ArgSettings
-from bindake.keyboard import MyKeyboard
-from bindake import hotkey
+from kbindake import Bindake
+from kbindake.keyboard import MyKeyboard
+from kbindake.makefile_config import MakefileConfig
+from kbindake.printer_view import PrinterView
+from kbindake.arg_settings import ArgSettings
+from kbindake.keyboard import MyKeyboard
+from kbindake import hotkey
 
 stop_event = threading.Event()
 

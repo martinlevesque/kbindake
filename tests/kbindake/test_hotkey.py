@@ -1,4 +1,4 @@
-from bindake import hotkey
+from kbindake import hotkey
 
 
 def test_hotkey_normalize_hotkey_happy_path():

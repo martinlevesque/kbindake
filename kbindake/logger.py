@@ -15,5 +15,6 @@ def info(message: str):
 def error(message: str):
     logging.getLogger(__name__).error(message)
 
+
 def warning(message: str):
     logging.getLogger(__name__).warning(message)

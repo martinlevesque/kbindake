@@ -2,7 +2,7 @@ import threading
 from dataclasses import dataclass, field
 
 from pynput.keyboard import Key
-from bindake.keyboard import MyKeyboard
+from kbindake.keyboard import MyKeyboard
 from lib.message_passer import MessagePasser
 
 

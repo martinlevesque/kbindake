@@ -1,4 +1,4 @@
-from bindake.makefile_config import MakefileConfig
+from kbindake.makefile_config import MakefileConfig
 
 
 def test_makefile_config_happy_path():

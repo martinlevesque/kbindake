@@ -1,7 +1,9 @@
 import tkinter as tk
+from screeninfo import get_monitors, Monitor
 from tkinter import font as tkfont
 from lib.message_passer import MessagePasser
 import settings
+from kbindake import logger
 
 
 class PrinterView(MessagePasser):
@@ -11,11 +13,20 @@ class PrinterView(MessagePasser):
         self.root.attributes("-topmost", True)
         self.root.configure(bg=settings.OVERLAY_BACKGROUND_COLOR)
 
-        self.sw = self.root.winfo_screenwidth()
-        self.sh = self.root.winfo_screenheight()
+        self.monitor = None
+        self.update_screen()
 
-        self.max_width = int(self.sw * 0.9)
-        self.max_height = int(self.sh * 0.5)
+        # Store base font info for dynamic sizing
+        self.base_font_family = (
+            settings.OVERLAY_FONT[0]
+            if isinstance(settings.OVERLAY_FONT, tuple)
+            else "Arial"
+        )
+        self.base_font_size = (
+            settings.OVERLAY_FONT[1] if isinstance(settings.OVERLAY_FONT, tuple) else 12
+        )
+        self.max_font_size = self.base_font_size
+        self.min_font_size = settings.OVERLAY_MIN_FONT_SIZE
 
         self.label = tk.Label(
             self.root,
@@ -26,16 +37,59 @@ class PrinterView(MessagePasser):
             padx=30,
             pady=20,
             justify="left",
-            wraplength=self.max_width - 60,  # wrap within max width
+            wraplength=self.max_width - 60,
         )
         self.label.pack()
-
         self.root.withdraw()
         self.fade_in_ms = 200
         self.fade_out_ms = 500
         self.max_alpha = 0.85
 
+    def update_screen(self):
+        self.monitor = self.get_active_monitor()
+
+        screen_height = None
+        screen_width = None
+
+        if self.monitor:
+            screen_height = self.monitor.width
+            screen_width = self.monitor.height
+        else:
+            screen_height = self.root.winfo_screenwidth()
+            screen_height = self.root.winfo_screenheight()
+
+        if screen_width:
+            self.max_width = int(screen_width * 0.9)
+
+        if screen_height:
+            self.max_height = int(screen_height * 0.9)
+
+    def get_mouse_position(self):
+        x = self.root.winfo_pointerx()
+        y = self.root.winfo_pointery()
+
+        return x, y
+
+    def get_active_monitor(self) -> Monitor | None:
+        mouse_x, mouse_y = self.get_mouse_position()
+
+        for m in get_monitors():
+            if m.x <= mouse_x < m.x + m.width and m.y <= mouse_y < m.y + m.height:
+                return m
+
+        return None
+
+    def calculate_optimal_font_size(self, text: str):
+        """Calculate optimal font size based on text length and screen size"""
+        nb_lines = len(text.split("\n"))
+
+        # Calculate new font size
+        new_size = settings.overlay_font_size(nb_lines)
+
+        return new_size
+
     def show(self, text: str, display_duration_ms: int = 500):
+        self.update_screen()
         nb_lines = len(str(text).split("\n"))
         self.root.after(0, self._show_impl, text, display_duration_ms * nb_lines)
 
@@ -50,9 +104,27 @@ class PrinterView(MessagePasser):
             self.root.destroy()
 
     def _show_impl(self, text: str, display_duration_ms: int):
-        self.label.config(text=text)
+        if not self.monitor:
+            logger.error("No monitor available.")
+            return
+
+        # Calculate optimal font size for this text
+        optimal_font_size = self.calculate_optimal_font_size(text)
+
+        # Create font with optimal size
+        if isinstance(settings.OVERLAY_FONT, tuple):
+            dynamic_font = (
+                self.base_font_family,
+                optimal_font_size,
+            ) + settings.OVERLAY_FONT[2:]
+        else:
+            dynamic_font = (self.base_font_family, optimal_font_size)
+
+        # Update label with new font and text
+        self.label.config(text=text, font=dynamic_font)
+
         nb_lines = len(text.split("\n"))
-        font_obj = tkfont.Font(font=settings.OVERLAY_FONT)
+        font_obj = tkfont.Font(font=dynamic_font)
         line_height = font_obj.metrics("linespace")
 
         # Estimate height based on line count + padding
@@ -60,14 +132,12 @@ class PrinterView(MessagePasser):
         estimated_height = nb_lines * line_height + padding_vertical
         h = min(estimated_height, self.max_height)
 
-        self.label.config(
-            wraplength=self.max_width - 60
-        )  # ensure wrapping respects width
+        self.label.config(wraplength=self.max_width - 60)
         self.root.update_idletasks()
         w = min(self.label.winfo_reqwidth(), self.max_width)
 
-        x = (self.sw // 2) - (w // 2)
-        y = int(self.sh * 0.75) - (h // 2)
+        x = self.monitor.x + (self.monitor.width // 2) - (w // 2)
+        y = self.monitor.y + int(self.monitor.height * 0.75) - (h // 2)
 
         self.root.geometry(f"{w}x{h}+{x}+{y}")
         self.root.deiconify()
