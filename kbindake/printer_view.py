@@ -22,12 +22,12 @@ class PrinterView(MessagePasser):
             if isinstance(settings.OVERLAY_FONT, tuple)
             else "Arial"
         )
-        self.base_font_size = (
-            settings.OVERLAY_FONT[1] if isinstance(settings.OVERLAY_FONT, tuple) else 12
-        )
-        self.max_font_size = self.base_font_size
-        self.min_font_size = settings.OVERLAY_MIN_FONT_SIZE
 
+        self.build_label()
+        self.root.withdraw()
+        self.max_alpha = 0.85
+
+    def build_label(self):
         self.label = tk.Label(
             self.root,
             text="",
@@ -40,10 +40,8 @@ class PrinterView(MessagePasser):
             wraplength=self.max_width - 60,
         )
         self.label.pack()
-        self.root.withdraw()
-        self.fade_in_ms = 200
-        self.fade_out_ms = 500
-        self.max_alpha = 0.85
+
+        return self.label
 
     def update_screen(self):
         self.monitor = self.get_active_monitor()
@@ -89,9 +87,14 @@ class PrinterView(MessagePasser):
         return new_size
 
     def show(self, text: str, display_duration_ms: int = 500):
+        if hasattr(self, "hide_timer") and self.hide_timer:
+            self.root.after_cancel(self.hide_timer)
+            self.hide_timer = None
+
         self.update_screen()
+
         nb_lines = len(str(text).split("\n"))
-        self.root.after(0, self._show_impl, text, display_duration_ms * nb_lines)
+        self.display_text_for(text, display_duration_ms * nb_lines)
 
     def is_view_destroyed(self):
         try:
@@ -103,7 +106,7 @@ class PrinterView(MessagePasser):
         if not self.is_view_destroyed():
             self.root.destroy()
 
-    def _show_impl(self, text: str, display_duration_ms: int):
+    def display_text_for(self, text: str, display_duration_ms: int):
         if not self.monitor:
             logger.error("No monitor available.")
             return
@@ -143,34 +146,14 @@ class PrinterView(MessagePasser):
         self.root.deiconify()
         self.root.lift()
 
-        self.fade_in(
-            step=0.05,
-            delay=20,
-            final_callback=lambda: self.root.after(display_duration_ms, self.fade_out),
-        )
+        self.fade_in()
+        self.hide_timer = self.root.after(display_duration_ms, self.fade_out)
 
-    def fade_in(self, step=0.05, delay=20, final_callback=None):
-        def _fade(alpha):
-            if alpha < self.max_alpha:
-                self.root.wm_attributes("-alpha", alpha)
-                self.root.after(delay, _fade, alpha + step)
-            else:
-                self.root.wm_attributes("-alpha", self.max_alpha)
-                if final_callback:
-                    final_callback()
+    def fade_in(self):
+        self.root.wm_attributes("-alpha", self.max_alpha)
 
-        _fade(0.0)
-
-    def fade_out(self, step=0.05, delay=20):
-        def _fade(alpha):
-            if alpha > 0.0:
-                self.root.wm_attributes("-alpha", alpha)
-                self.root.after(delay, _fade, alpha - step)
-            else:
-                self.root.wm_attributes("-alpha", 0.0)
-                self.root.withdraw()
-
-        _fade(self.max_alpha)
+    def fade_out(self):
+        self.root.wm_attributes("-alpha", 0.0)
 
     def run(self):
         self.root.mainloop()
