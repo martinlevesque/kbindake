@@ -57,7 +57,6 @@ class MyKeyboard(MessagePasser):
                 # Parse the hotkey string and create the callback
                 hotkey_dict[h] = lambda hotkey=h: on_hotkey(hotkey, hotkey)
 
-        # Use GlobalHotKeys which handles suppression automatically
         with keyboard.GlobalHotKeys(hotkey_dict) as hotkey_listener:
             while not self.stop_event.is_set():
                 time.sleep(0.1)
