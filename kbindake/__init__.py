@@ -24,7 +24,7 @@ class Bindake(MessagePasser):
             logger.info(message)
 
     def __post_init__(self):
-        logger.info("Starting Bindake")
+        logger.info("Starting kbindake")
 
     def receive(self, message: dict):
         if not self.makefile:

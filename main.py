@@ -52,7 +52,7 @@ def read_args():
         "-s",
         "--boot-wait",
         type=int,
-        default=30,
+        default=0,
         help="Wait N seconds before booting (default: 30)",
     )
     parser.add_argument(
