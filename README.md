@@ -25,7 +25,7 @@ kbindake turns your Makefile into a **supercharged hotkey manager**. kbindake al
 ```bash
 git clone https://github.com/martinlevesque/kbindake
 cd kbindake
-pip3 install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 ### Basic Usage
