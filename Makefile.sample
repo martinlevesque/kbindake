@@ -16,5 +16,5 @@ chrome:
 	fi; \
 	echo "Chrome Browser"
 
-other-cmd:
-	ls -la
+current-date:
+	date "+%Y-%m-%d %H:%M:%S"
