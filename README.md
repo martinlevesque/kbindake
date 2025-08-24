@@ -6,17 +6,17 @@
 ![Python](https://img.shields.io/badge/python-3.7+-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-cross--platform-green.svg)
 
-## Overall overview
+## Overview
 
 kbindake turns your Makefile into a **supercharged hotkey manager**. kbindake allows to map key combos into makefile commands, and see the output in a convenient overlay.
 
 ## Features ✨
 
-- 🎯 **Makefile-based configuration** - Reuse your existing makefile scripts
+- 🎯 **Makefile-based configuration** - Reuse your existing makefile scripts.
 - 🚀 **Global hotkeys** - Works system-wide, allows to switch between programs efficiently with a keybinding.
-- 🎨 **Visual overlay** - See command output in beautiful on-screen displays
-- ⚡ **Autoboot commands** - Run stuff automatically when kbindake starts
-- 🔧 **Help binding viewer** - See all your shortcuts with a special hotkey
+- 🎨 **Visual overlay** - See command output in beautiful on-screen displays.
+- ⚡ **Autoboot commands** - Run stuff automatically when kbindake starts.
+- 🔧 **Help binding viewer** - See all your shortcuts with a special hotkey.
 
 ## Quick Start
 
@@ -38,7 +38,7 @@ firefox:
 	firefox &
 ```
 
-This sample Makefile will boot a new instance of firefox when hitting Super+Ctrl+F. Note that, to make it resumable and avoid booting a new firefox process everything you will need to check and reuse it, such as (example in Linux):
+This sample Makefile will boot a new instance of firefox when hitting Super+Ctrl+F. Note that, to make it resumable and avoid booting a new firefox process everytime, you can reuse it with a command such as (example in Linux):
 
 ```makefile
 # kbindake[autoboot,overlay-command-output]: <Super>+<Ctrl>+f
@@ -65,8 +65,10 @@ python kbindake/main.py -v
 Add the command line into your favorite startup application manager (e.g. Startup Applications Preferences in Ubuntu):
 
 ```
-python <kbindake folder>/kbindake/main.py --boot-wait 30 --bindings-overlay-hotkey "<Cmd>+h"
+python <kbindake folder>/kbindake/main.py --boot-wait 30 --bindings-overlay-hotkey "<Super>+h"
 ```
+
+The `--boot-wait` option is recommended such that the graphical interface has been initialized at boot time.
 
 ## Hotkey Format 📝
 
@@ -80,10 +82,10 @@ python <kbindake folder>/kbindake/main.py --boot-wait 30 --bindings-overlay-hotk
 
 kbindake is built with a simple, modular architecture:
 
-- **kbindake/keyboard.py** - Global hotkey detection using `pynput`.
-- **kbindake/makefile_config.py** - Parses your Makefile and executes commands.
-- **kbindake/printer_view.py** - Overlay UI component with dynamic sizing.
-- **kbindake/__init__.py** - Glue the 3 main modules together.
+- **`kbindake/keyboard.py`** - Global hotkey detection using `pynput`.
+- **`kbindake/makefile_config.py`** - Parses your Makefile and executes commands.
+- **`kbindake/printer_view.py`** - Overlay UI component with dynamic sizing.
+- **`kbindake/__init__.py`** - Glue the 3 main modules together.
 
 ## Alternative Solutions
 
