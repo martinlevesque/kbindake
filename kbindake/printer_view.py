@@ -155,6 +155,8 @@ class PrinterView(MessagePasser):
     def fade_out(self):
         self.root.wm_attributes("-alpha", 0.0)
 
+        self.root.withdraw()
+
     def run(self):
         self.root.mainloop()
 
