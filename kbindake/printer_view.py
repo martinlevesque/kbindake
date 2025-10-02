@@ -50,10 +50,10 @@ class PrinterView(MessagePasser):
         screen_width = None
 
         if self.monitor:
-            screen_height = self.monitor.width
-            screen_width = self.monitor.height
+            screen_width = self.monitor.width
+            screen_height = self.monitor.height
         else:
-            screen_height = self.root.winfo_screenwidth()
+            screen_width = self.root.winfo_screenwidth()
             screen_height = self.root.winfo_screenheight()
 
         if screen_width:
